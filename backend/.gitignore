@@ -1,0 +1,32 @@
+# Dependencias de Node
+/node_modules
+
+# Archivos de caché y logs generados
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# Variables de entorno - ¡CRUCIAL PARA LA SEGURIDAD!
+# Contiene tus credenciales de base de datos MySQL.
+#.env
+
+# Directorios de compilación/transpilación (si usas TypeScript o Babel)
+/dist
+/build
+/out
+
+# Ignorar archivos del OS
+.DS_Store
+Thumbs.db
+
+# Archivos de copia de seguridad o editores
+*.sublime-project
+*.sublime-workspace
+.vscode/
+
+# Logs de procesos
+pids
+*.pid
+*.seed
+*.log

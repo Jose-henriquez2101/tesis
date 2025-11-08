@@ -1,4 +1,8 @@
 const { Capacitador } = require('../models');
+const bcrypt = require('bcrypt');
+
+// Definimos el factor de coste (cuán segura/lenta será la encriptación)
+const SALT_ROUNDS = 10;
 
 // [C] CREATE: Crea un nuevo capacitador
 async function crearCapacitador(datosCapacitador) {

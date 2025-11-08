@@ -1,0 +1,18 @@
+<div class="login-container">
+	<h2>Login Capacitador</h2>
+	<form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+		<div class="form-group">
+			<label for="correo">Correo</label>
+			<input id="correo" type="email" formControlName="Correo" placeholder="Correo" />
+			<div *ngIf="loginForm.get('Correo')?.invalid && loginForm.get('Correo')?.touched" class="error">Correo inválido</div>
+		</div>
+		<div class="form-group">
+			<label for="contrasena">Contraseña</label>
+			<input id="contrasena" type="password" formControlName="Contrasena" placeholder="Contraseña" />
+			<div *ngIf="loginForm.get('Contrasena')?.invalid && loginForm.get('Contrasena')?.touched" class="error">Contraseña requerida</div>
+		</div>
+		<button type="submit" [disabled]="loading">Ingresar</button>
+	</form>
+	<div *ngIf="errorMsg" class="error-msg">{{ errorMsg }}</div>
+	<div *ngIf="successMsg" class="success-msg">{{ successMsg }}</div>
+</div>

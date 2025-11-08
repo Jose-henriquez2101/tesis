@@ -8,8 +8,9 @@ const sequelize = new Sequelize(
   process.env.DB_PASSWORD,
   {
     host: process.env.DB_HOST,
-    dialect: process.env.DB_DIALECT,
-    logging: false // Deshabilita los logs de SQL en la consola
+    // Provide a sensible default if DB_DIALECT is not set in the environment
+    dialect: process.env.DB_DIALECT || 'mysql',
+    logging: console.log
   }
 );
 
@@ -19,7 +20,8 @@ async function connectDB() {
     await sequelize.authenticate();
     console.log('Conexión a la base de datos MySQL establecida correctamente.');
   } catch (error) {
-    console.error('Error al conectar a la base de datos:', error.message);
+    // Log full error for better diagnostics (stack/obj may contain more details)
+    console.error('Error al conectar a la base de datos:', error && (error.message || error.stack || error));
   }
 }
 

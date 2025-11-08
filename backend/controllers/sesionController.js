@@ -1,87 +1,126 @@
-const sesionService = require('../services/sesionService');
+const { SesionEntrenamiento, Bombero, Capacitador, Escenario } = require('../models');
 
-// CREATE (C) - Ya existente
-async function crearSesion(req, res) {
-  // ... (código anterior)
-}
-
-// READ (R) - Obtener una sesión por su ID (Nuevo)
-async function obtenerSesion(req, res) {
-  const ID_Sesion = req.params.id;
-  
+// Función CREATE (C) - Ya existente
+async function registrarNuevaSesion(datosSesion) {
   try {
-    const sesion = await sesionService.obtenerSesionPorId(ID_Sesion);
-    
-    res.status(200).json(sesion);
+    // ... (lógica de validación)
+    const nuevaSesion = await SesionEntrenamiento.create(datosSesion);
+    return nuevaSesion;
   } catch (error) {
-    if (error.message.includes('no encontrada')) {
-      res.status(404).json({ message: error.message });
-    } else {
-      res.status(500).json({ message: 'Error al obtener la sesión.', error: error.message });
-    }
+    // Log full error and rethrow it so controller can surface useful diagnostics
+    console.error('Error en servicio al registrar sesión:', error && (error.message || error.stack || error));
+    // Rethrow a descriptive error that preserves original message for debugging
+    throw new Error('No se pudo registrar la sesión de entrenamiento. ' + (error.message || error));
   }
 }
 
-// READ (R) - Obtener todas las sesiones (Nuevo)
-async function obtenerTodasSesiones(req, res) {
+// Función READ (R) - Nueva función para obtener una sola sesión por ID
+async function obtenerSesionPorId(idSesion) {
   try {
-    const sesiones = await sesionService.obtenerTodasSesiones();
-    res.status(200).json(sesiones);
-  } catch (error) {
-    console.error('Error en controlador al obtener todas las sesiones:', error.message);
-    res.status(500).json({ message: 'Error al obtener las sesiones.', error: error.message });
-  }
-}
-
-// READ (R) - Obtener todas las sesiones de un bombero (Ya existente)
-async function obtenerSesionesBombero(req, res) {
-  // ... (código anterior)
-}
-
-// UPDATE (U) - (Nuevo)
-async function actualizarSesion(req, res) {
-  const ID_Sesion = req.params.id;
-  const datosActualizados = req.body;
-  
-  try {
-    const sesionActualizada = await sesionService.actualizarSesion(ID_Sesion, datosActualizados);
-    
-    res.status(200).json({
-      message: `Sesión ID ${ID_Sesion} actualizada con éxito.`,
-      sesion: sesionActualizada
+    const sesion = await SesionEntrenamiento.findByPk(idSesion, {
+      include: [
+        { model: Bombero, as: 'bombero', attributes: ['ID_Bombero', 'NombreCompleto', 'Rut'] },
+        { model: Capacitador, as: 'capacitador', attributes: ['ID_Capacitador', 'Nombre'] },
+        { model: Escenario, as: 'escenario', attributes: ['id_Escenario', 'NombreEscenario'] }
+      ]
     });
-  } catch (error) {
-    if (error.message.includes('no encontrada')) {
-      res.status(404).json({ message: error.message });
-    } else {
-      res.status(500).json({ message: 'Error al actualizar la sesión.', error: error.message });
+    
+    if (!sesion) {
+      // Usaremos un error específico que el controlador pueda mapear a un 404
+      throw new Error(`Sesión con ID ${idSesion} no encontrada.`);
     }
+    
+    return sesion;
+  } catch (error) {
+    throw error; // Re-lanza el error (ya sea de no encontrado o de base de datos)
   }
 }
 
-// DELETE (D) - (Nuevo)
-async function eliminarSesion(req, res) {
-  const ID_Sesion = req.params.id;
-  
+// Función READ (R) - Ya existente (obtener por bombero)
+async function obtenerSesionesPorBombero(ID_Bombero) {
   try {
-    const resultado = await sesionService.eliminarSesion(ID_Sesion);
-    
-    // Respuesta de éxito sin contenido (204 No Content) es común para DELETE
-    res.status(204).json(resultado); 
+    // ... (lógica de consulta)
+    const sesiones = await SesionEntrenamiento.findAll({
+      where: { ID_Bombero_FK: ID_Bombero },
+      include: [
+        { model: Bombero, as: 'bombero', attributes: ['ID_Bombero', 'NombreCompleto', 'Rut'] },
+        { model: Capacitador, as: 'capacitador', attributes: ['ID_Capacitador', 'Nombre'] },
+        { model: Escenario, as: 'escenario', attributes: ['id_Escenario', 'NombreEscenario'] }
+      ]
+    });
+    return sesiones;
   } catch (error) {
-    if (error.message.includes('no encontrada')) {
-      res.status(404).json({ message: error.message });
-    } else {
-      res.status(500).json({ message: 'Error al eliminar la sesión.', error: error.message });
+    console.error("Error en servicio al obtener sesiones:", error.message);
+    throw new Error('No se pudieron obtener las sesiones del bombero.');
+  }
+}
+
+// Función READ (R) - Obtener todas las sesiones (Nuevo)
+async function obtenerTodasSesiones() {
+  try {
+    const sesiones = await SesionEntrenamiento.findAll({
+      include: [
+        { model: Bombero, as: 'bombero', attributes: ['ID_Bombero', 'NombreCompleto', 'Rut'] },
+        { model: Capacitador, as: 'capacitador', attributes: ['ID_Capacitador', 'Nombre'] },
+        { model: Escenario, as: 'escenario', attributes: ['id_Escenario', 'NombreEscenario'] }
+      ]
+    });
+    return sesiones;
+  } catch (error) {
+    console.error('Error en servicio al obtener todas las sesiones:', error.message);
+    throw new Error('No se pudieron obtener las sesiones.');
+  }
+}
+
+// Función UPDATE (U)
+async function actualizarSesion(idSesion, datosActualizados) {
+  try {
+    // 1. Busca la sesión para verificar si existe
+    const sesion = await SesionEntrenamiento.findByPk(idSesion);
+    
+    if (!sesion) {
+      throw new Error(`Sesión con ID ${idSesion} no encontrada para actualizar.`);
     }
+    
+    // 2. Aplica la actualización
+    // El método update devuelve [número_de_filas_afectadas, filas_afectadas]
+    const [filasAfectadas] = await SesionEntrenamiento.update(datosActualizados, {
+      where: { ID_Sesion: idSesion }
+    });
+    
+    // 3. Opcional: Obtener la sesión actualizada para retornarla
+    const sesionActualizada = await SesionEntrenamiento.findByPk(idSesion);
+    
+    return sesionActualizada;
+  } catch (error) {
+    console.error("Error en servicio al actualizar sesión:", error.message);
+    throw new Error('No se pudo actualizar la sesión de entrenamiento.');
+  }
+}
+
+// Función DELETE (D)
+async function eliminarSesion(idSesion) {
+  try {
+    const filasEliminadas = await SesionEntrenamiento.destroy({
+      where: { ID_Sesion: idSesion }
+    });
+    
+    if (filasEliminadas === 0) {
+      // Usaremos un error específico que el controlador pueda mapear a un 404
+      throw new Error(`Sesión con ID ${idSesion} no encontrada para eliminar.`);
+    }
+    
+    return { message: `Sesión ID ${idSesion} eliminada con éxito.` };
+  } catch (error) {
+    throw error;
   }
 }
 
 module.exports = {
-  crearSesion,
-  obtenerSesion,             // Nuevo
-  obtenerTodasSesiones,     // Nuevo
-  obtenerSesionesBombero,
-  actualizarSesion,          // Nuevo
-  eliminarSesion             // Nuevo
+  registrarNuevaSesion,
+  obtenerSesionPorId, // Nuevo método READ
+  obtenerTodasSesiones,
+  obtenerSesionesPorBombero,
+  actualizarSesion,   // Nuevo método UPDATE
+  eliminarSesion      // Nuevo método DELETE
 };

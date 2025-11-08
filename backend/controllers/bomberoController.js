@@ -3,6 +3,15 @@ const bomberoService = require('../services/bomberoService');
 // [C] POST: Crear un nuevo bombero
 async function crearBombero(req, res) {
   try {
+    console.log('📥 Datos recibidos en crearBombero:', req.body);
+    
+    // Validar datos requeridos
+    if (!req.body.Rut || !req.body.NombreCompleto) {
+      return res.status(400).json({
+        message: 'Rut y NombreCompleto son campos obligatorios'
+      });
+    }
+
     const nuevoBombero = await bomberoService.crearBombero(req.body);
     
     // Obtener la instancia de Socket.io
@@ -23,6 +32,8 @@ async function crearBombero(req, res) {
       bombero: nuevoBombero
     });
   } catch (error) {
+    console.error('❌ Error en crearBombero:', error);
+    console.error('🔍 Stack trace completo:', error.stack);
     res.status(500).json({
       message: 'Error al crear el bombero.',
       error: error.message
@@ -33,9 +44,13 @@ async function crearBombero(req, res) {
 // [R] GET: Obtener todos los bomberos
 async function obtenerBomberos(req, res) {
   try {
+    console.log('📥 Solicitando todos los bomberos');
     const bomberos = await bomberoService.obtenerBomberos();
+    
+    console.log(`✅ Se encontraron ${bomberos.length} bomberos`);
     res.status(200).json(bomberos);
   } catch (error) {
+    console.error('❌ Error en obtenerBomberos:', error);
     res.status(500).json({
       message: 'Error al obtener los bomberos.',
       error: error.message
@@ -86,8 +101,7 @@ async function eliminarBombero(req, res) {
 
   try {
     const resultado = await bomberoService.eliminarBombero(ID_Bombero);
-    // 204 No Content es la respuesta estándar para DELETE exitoso
-    res.status(204).json(resultado);
+    res.status(200).json(resultado);
   } catch (error) {
     if (error.message.includes('no encontrado')) {
       res.status(404).json({ message: error.message });

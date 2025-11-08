@@ -42,14 +42,29 @@ import { RouterModule } from '@angular/router';
           </div>
         </div>
       </div>
-    </div>
+
+     
   `,
   styles: [`
     .card {
       transition: transform 0.2s;
+      border: 1px solid #e9ecef;
     }
     .card:hover {
       transform: translateY(-5px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .card-title {
+      color: #2c3e50;
+      margin-bottom: 0.75rem;
+    }
+    .card-text {
+      color: #6c757d;
+      margin-bottom: 1rem;
+    }
+    .btn {
+      border-radius: 6px;
+      font-weight: 500;
     }
   `]
 })

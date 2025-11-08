@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-login-capacitador',
@@ -18,7 +19,11 @@ export class LoginCapacitador {
   errorMsg = '';
   successMsg = '';
 
-  constructor(private fb: FormBuilder, private http: HttpClient) {
+  constructor(
+    private fb: FormBuilder, 
+    private http: HttpClient,
+    private authService: AuthService
+  ) {
     this.loginForm = this.fb.group({
       Correo: ['', [Validators.required, Validators.email]],
       Contrasena: ['', [Validators.required]]
@@ -34,12 +39,13 @@ export class LoginCapacitador {
     }
     this.loading = true;
     const loginData = this.loginForm.value;
-  // Ajustado para usar la ruta del backend: /api/v1/capacitadores/login
-  this.http.post<any>('/api/v1/capacitadores/login', loginData).subscribe({
+    
+    this.http.post<any>('/api/v1/capacitadores/login', loginData).subscribe({
       next: (res: any) => {
         this.successMsg = 'Login exitoso.';
         this.loading = false;
-        // Aquí podrías redirigir o guardar token
+        // Guardar capacitador y redirigir
+        this.authService.setLoggedInCapacitador(res.capacitador);
       },
       error: (err: any) => {
         this.errorMsg = err.error?.message || 'Error en el login.';

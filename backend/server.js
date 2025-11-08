@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors');
 const { connectDB } = require('./config/database');
 const sesionRoutes = require('./routes/sesionRoutes'); 
 const bomberoRoutes = require('./routes/bomberoRoutes');
@@ -11,6 +12,9 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(express.json()); // Permite a Express leer cuerpos JSON en las peticiones
+
+//Cors desde cualquier origen
+app.use(cors());
 
 // Conectar a la base de datos
 connectDB();

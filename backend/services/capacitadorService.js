@@ -1,11 +1,25 @@
 const { Capacitador } = require('../models');
+const bcrypt = require('bcrypt');
+
+// Definimos el factor de coste (cuán segura/lenta será la encriptación)
+const SALT_ROUNDS = 10;
 
 // [C] CREATE: Crea un nuevo capacitador
 async function crearCapacitador(datosCapacitador) {
   try {
-    // Nota: Si implementaras seguridad, la contraseña se hashearía aquí antes de guardar.
+    // 1. Hashear la contraseña antes de guardar
+    if (datosCapacitador.Contrasena) {
+      const hashedPassword = await bcrypt.hash(datosCapacitador.Contrasena, SALT_ROUNDS);
+      // Reemplazamos la contraseña plana con el hash
+      datosCapacitador.Contrasena = hashedPassword;
+    }
+    
     const nuevoCapacitador = await Capacitador.create(datosCapacitador);
-    return nuevoCapacitador;
+    
+    // Devolvemos el objeto, asegurándonos de NO incluir la contraseña hasheada
+    // (Sequelize ya debería excluirla en el método findByPk del controlador, pero es buena práctica)
+    const { Contrasena, ...rest } = nuevoCapacitador.toJSON();
+    return rest;
   } catch (error) {
     console.error("Error en servicio al crear capacitador:", error.message);
     throw new Error('No se pudo crear el registro del capacitador.');
@@ -46,11 +60,18 @@ async function obtenerCapacitadorPorId(ID_Capacitador) {
 // [U] UPDATE: Actualizar un capacitador por ID
 async function actualizarCapacitador(ID_Capacitador, datosActualizados) {
   try {
-    // Verificar si el capacitador existe y actualizar
+    // 1. Hashear la contraseña si se incluye en la actualización
+    if (datosActualizados.Contrasena) {
+        const hashedPassword = await bcrypt.hash(datosActualizados.Contrasena, SALT_ROUNDS);
+        datosActualizados.Contrasena = hashedPassword;
+    }
+
+    // 2. Continúa con la lógica de actualización
     const [filasAfectadas] = await Capacitador.update(datosActualizados, {
       where: { ID_Capacitador: ID_Capacitador }
     });
-
+    // ... (rest of update logic)
+    
     if (filasAfectadas === 0) {
       throw new Error(`Capacitador con ID ${ID_Capacitador} no encontrado para actualizar.`);
     }

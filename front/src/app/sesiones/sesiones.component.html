@@ -1,0 +1,39 @@
+<div class="sesiones-container">
+  <h2>🎮 Configuración de Sesión de Entrenamiento</h2>
+  
+  <p>Capacitador activo: <strong>{{ capacitador?.nombre }}</strong> (ID: {{ capacitador?.ID_Capacitador }})</p>
+
+  <hr>
+
+  <div *ngIf="bomberoEnEspera" class="card p-3 mb-4 alert alert-info">
+    <h3>🚨 Bombero en Espera (Unidad VR)</h3>
+    <p>Nombre: <strong>{{ bomberoEnEspera.nombre }}</strong></p>
+    <p>RUT: <strong>{{ bomberoEnEspera.rut }}</strong></p>
+    <p class="text-muted">Unity ID: {{ unityInstanceId }}</p>
+
+    <div class="mt-3">
+      <label for="escenarioSelect" class="form-label">Elegir Escenario:</label>
+      <select 
+        id="escenarioSelect" 
+        class="form-select" 
+        [(ngModel)]="escenarioSeleccionadoId"
+      >
+        <option *ngFor="let esc of escenarios" [ngValue]="esc.id_Escenario">
+          {{ esc.NombreEscenario }}
+        </option>
+      </select>
+    </div>
+
+    <button 
+      (click)="iniciarSimulacion()" 
+      [disabled]="!escenarioSeleccionadoId"
+      class="btn btn-primary mt-3"
+    >
+      ✅ Iniciar Simulación en VR
+    </button>
+  </div>
+
+  <div *ngIf="!bomberoEnEspera" class="alert alert-secondary">
+    Esperando a que un bombero ingrese sus datos en la Unidad VR...
+  </div>
+</div>

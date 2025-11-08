@@ -30,6 +30,11 @@ export const routes: Route[] = [
     loadComponent: () => import('./escenario/escenario.component').then(m => m.EscenarioComponent),
     canActivate: [authGuard]
   },
+  {
+    path: 'sesiones',
+    loadComponent: () => import('./sesiones/sesiones.component').then(m => m.SesionesComponent),
+    canActivate: [authGuard]
+  },
   // Rutas auxiliares pendientes de implementar como módulos/components
   { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
   { path: '**', redirectTo: '/dashboard' }

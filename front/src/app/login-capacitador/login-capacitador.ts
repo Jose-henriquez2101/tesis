@@ -34,7 +34,8 @@ export class LoginCapacitador {
     }
     this.loading = true;
     const loginData = this.loginForm.value;
-    this.http.post<any>('/api/capacitador/login', loginData).subscribe({
+  // Ajustado para usar la ruta del backend: /api/v1/capacitadores/login
+  this.http.post<any>('/api/v1/capacitadores/login', loginData).subscribe({
       next: (res: any) => {
         this.successMsg = 'Login exitoso.';
         this.loading = false;

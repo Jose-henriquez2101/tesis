@@ -1,5 +1,22 @@
 const capacitadorService = require('../services/capacitadorService');
 
+// [A] POST: Login / Autenticar capacitador
+async function loginCapacitador(req, res) {
+  const { Correo, Contrasena } = req.body;
+  try {
+    const capacitador = await capacitadorService.autenticarCapacitador({ Correo, Contrasena });
+    // Devuelve 200 con el capacitador (sin contraseña). En producción, deberías devolver un token JWT.
+    res.status(200).json({ message: 'Autenticación exitosa', capacitador });
+  } catch (error) {
+    // Credenciales inválidas -> 401
+    const msg = error && error.message ? error.message : 'Error de autenticación';
+    if (msg.includes('Credenciales inválidas')) {
+      return res.status(401).json({ message: 'Correo o contraseña incorrectos' });
+    }
+    return res.status(500).json({ message: 'Error en autenticación', error: msg });
+  }
+}
+
 // [C] POST: Crear un nuevo capacitador
 async function crearCapacitador(req, res) {
   try {
@@ -83,6 +100,7 @@ async function eliminarCapacitador(req, res) {
 }
 
 module.exports = {
+  loginCapacitador,
   crearCapacitador,
   obtenerCapacitadores,
   obtenerCapacitador,

@@ -5,6 +5,8 @@ const capacitadorController = require('../controllers/capacitadorController');
 // Rutas base: /api/v1/capacitadores
 
 // [C] Crear y [R] Obtener todos
+// [A] Autenticación (POST /login)
+router.post('/login', capacitadorController.loginCapacitador);
 router.post('/', capacitadorController.crearCapacitador);
 router.get('/', capacitadorController.obtenerCapacitadores);
 

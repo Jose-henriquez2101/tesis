@@ -26,6 +26,35 @@ async function crearCapacitador(datosCapacitador) {
   }
 }
 
+// [A] AUTH: Autenticar capacitador por correo y contraseña
+async function autenticarCapacitador({ Correo, Contrasena }) {
+  try {
+    const capacitador = await Capacitador.findOne({ where: { Correo } });
+    if (!capacitador) {
+      throw new Error('Credenciales inválidas');
+    }
+
+    // Si la contraseña en BD está hasheada, comparamos
+    const stored = capacitador.toJSON();
+    if (!stored.Contrasena) {
+      throw new Error('Credenciales inválidas');
+    }
+
+    const bcrypt = require('bcrypt');
+    const match = await bcrypt.compare(Contrasena, stored.Contrasena);
+    if (!match) {
+      throw new Error('Credenciales inválidas');
+    }
+
+    // Excluir la contraseña antes de devolver
+    const { Contrasena: _, ...safe } = stored;
+    return safe;
+  } catch (error) {
+    // Re-lanzamos errores para que el controlador decida el código HTTP
+    throw error;
+  }
+}
+
 // [R] READ: Obtener todos los capacitadores
 async function obtenerCapacitadores() {
   try {
@@ -103,6 +132,7 @@ async function eliminarCapacitador(ID_Capacitador) {
 }
 
 module.exports = {
+  autenticarCapacitador,
   crearCapacitador,
   obtenerCapacitadores,
   obtenerCapacitadorPorId,

@@ -18,6 +18,8 @@ router.put('/:id', sesionController.actualizarSesion);
 // [D] Eliminar - Eliminar UNA sesión por ID (DELETE /api/v1/sesiones/123)
 router.delete('/:id', sesionController.eliminarSesion);
 
+// Ruta POST para que Angular inicie la simulación en Unity
+router.post('/preparar-simulacion', sesionController.prepararSimulacion);
 
 // Ruta de relación: Obtener sesiones de un bombero (GET /api/v1/sesiones/bomberos/123)
 router.get('/bomberos/:id', sesionController.obtenerSesionesBombero);

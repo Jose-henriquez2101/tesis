@@ -4,8 +4,22 @@ const bomberoService = require('../services/bomberoService');
 async function crearBombero(req, res) {
   try {
     const nuevoBombero = await bomberoService.crearBombero(req.body);
+    
+    // Obtener la instancia de Socket.io
+    const io = req.app.get('socketio');
+    
+    // Emitir el evento a todos los clientes (Angular web)
+    io.emit('bombero-listo', {
+      evento: "bombero-listo",
+      data: {
+        idBombero: nuevoBombero.ID_Bombero, // Asume que el servicio retorna el ID
+        nombre: nuevoBombero.NombreCompleto,
+        rut: nuevoBombero.Rut
+      }
+    });
+    
     res.status(201).json({
-      message: 'Bombero creado con éxito.',
+      message: 'Bombero creado con éxito y evento emitido a la Web.',
       bombero: nuevoBombero
     });
   } catch (error) {

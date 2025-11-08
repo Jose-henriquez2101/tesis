@@ -21,6 +21,55 @@ async function crearSesion(req, res) {
   }
 }
 
+// [C] POST: Controlador para que Angular envíe la configuración final
+async function prepararSimulacion(req, res) {
+  // Datos enviados por Angular
+  const { idBombero, idCapacitador, idEscenario, nombreEscenario, idInstanciaUnity } = req.body; 
+
+  if (!idBombero || !idCapacitador || !idEscenario || !idInstanciaUnity) {
+    return res.status(400).json({ message: 'Faltan datos de configuración para iniciar la simulación.' });
+  }
+
+  try {
+    // 1. (OPCIONAL) Lógica de registro de SesiónEntrenamiento en la BD
+    // Puedes usar aquí el servicio de sesiones para crear un registro con estado "INICIADA"
+    
+    // 2. Obtener la instancia de Socket.io y la lista de clientes Unity
+    const io = req.app.get('socketio');
+    const unityClients = req.app.get('unityClients');
+    
+    // 3. Obtener el socket ID de la instancia de Unity a la que apuntamos
+    const unitySocketId = unityClients.get(idInstanciaUnity);
+
+    if (!unitySocketId) {
+      // Si el socket de Unity no está conectado, respondemos con un error
+      return res.status(404).json({ 
+        message: `Instancia de Unity con ID ${idInstanciaUnity} no encontrada o no conectada.` 
+      });
+    }
+
+    // 4. Emitir el evento de iniciar simulación SOLO a ese cliente Unity específico
+    io.to(unitySocketId).emit('iniciar-simulacion', {
+      evento: "iniciar-simulacion",
+      data: {
+        idEscenario: idEscenario,
+        nombreEscenario: nombreEscenario 
+      }
+    });
+
+    res.status(200).json({
+      message: 'Simulación preparada y evento de escenario enviado a Unity.',
+      targetUnityId: idInstanciaUnity
+    });
+
+  } catch (error) {
+    res.status(500).json({ 
+      message: 'Error en la preparación de la simulación.', 
+      error: error.message 
+    });
+  }
+}
+
 // [R] READ: Obtener una sesión por su ID (GET /api/sesiones/:id)
 async function obtenerSesion(req, res) {
   const ID_Sesion = req.params.id;
@@ -112,5 +161,6 @@ module.exports = {
   obtenerTodasSesiones,
   obtenerSesionesBombero,
   actualizarSesion,
-  eliminarSesion
+  eliminarSesion,
+  prepararSimulacion
 };

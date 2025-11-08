@@ -1,0 +1,20 @@
+<div class="container mt-4">
+  <h2>Escenarios</h2>
+
+  <div *ngIf="loading" class="alert alert-info">Cargando escenarios...</div>
+  <div *ngIf="errorMsg" class="alert alert-danger">{{ errorMsg }}</div>
+
+  <div class="row">
+    <div *ngFor="let e of escenarios" class="col-md-6 mb-3">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">{{ e.NombreEscenario }}</h5>
+          <p class="card-text">{{ e.DescripcionEscenario }}</p>
+          <small class="text-muted">ID: {{ e.id_Escenario }}</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!loading && escenarios.length === 0" class="alert alert-warning">No se encontraron escenarios.</div>
+</div>

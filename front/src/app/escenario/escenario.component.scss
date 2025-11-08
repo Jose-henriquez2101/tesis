@@ -1,0 +1,10 @@
+/* estilos para escenario */
+.container h2 {
+  margin-bottom: 1rem;
+}
+.card {
+  transition: transform 0.15s;
+}
+.card:hover {
+  transform: translateY(-4px);
+}

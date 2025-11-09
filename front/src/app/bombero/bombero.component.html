@@ -1,0 +1,111 @@
+<div class="container mt-4">
+  <h2>Gestión de Bomberos</h2>
+
+  <!-- Botón para crear nuevo bombero -->
+  <div class="mb-3">
+    <button class="btn btn-primary" (click)="crearBombero()" [disabled]="loading">
+      <i class="bi bi-plus-circle"></i> Nuevo Bombero
+    </button>
+  </div>
+
+  <!-- Mensajes de estado -->
+  <div *ngIf="loading" class="alert alert-info">
+    <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+    Cargando...
+  </div>
+  <div *ngIf="errorMsg" class="alert alert-danger">{{ errorMsg }}</div>
+  <div *ngIf="successMsg" class="alert alert-success">{{ successMsg }}</div>
+
+  <!-- Formulario para crear/editar -->
+  <div *ngIf="showForm" class="card mb-4">
+    <div class="card-header">
+      <h5 class="card-title mb-0">
+        {{ editingBombero ? 'Editar Bombero' : 'Crear Nuevo Bombero' }}
+      </h5>
+    </div>
+    <div class="card-body">
+      <form (ngSubmit)="guardarBombero()" #bomberoForm="ngForm">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="rut" class="form-label">RUT *</label>
+            <input
+              type="text"
+              class="form-control"
+              id="rut"
+              [(ngModel)]="bomberoModel.Rut"
+              name="rut"
+              placeholder="12345678-9"
+              required
+              [disabled]="loading">
+            <div class="form-text">Formato: 12345678-9 (sin puntos, con guión)</div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="nombreCompleto" class="form-label">Nombre Completo *</label>
+            <input
+              type="text"
+              class="form-control"
+              id="nombreCompleto"
+              [(ngModel)]="bomberoModel.NombreCompleto"
+              name="nombreCompleto"
+              placeholder="Juan Pérez González"
+              required
+              [disabled]="loading">
+          </div>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button 
+            type="submit" 
+            class="btn btn-success" 
+            [disabled]="loading || !bomberoModel.Rut || !bomberoModel.NombreCompleto">
+            {{ loading ? 'Guardando...' : (editingBombero ? 'Actualizar' : 'Crear') }}
+          </button>
+          <button 
+            type="button" 
+            class="btn btn-secondary" 
+            (click)="cancelarEdicion()" 
+            [disabled]="loading">
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Lista de bomberos -->
+  <div class="row" *ngIf="!loading">
+    <div *ngFor="let b of bomberos" class="col-md-6 mb-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start">
+            <div class="flex-grow-1">
+              <h5 class="card-title text-primary">{{ b.NombreCompleto }}</h5>
+              <p class="card-text mb-2">
+                <strong>RUT:</strong> {{ b.Rut }}
+              </p>
+              <small class="text-muted">ID: {{ b.ID_Bombero }}</small>
+            </div>
+            <div class="btn-group ms-3">
+              <button 
+                class="btn btn-outline-primary btn-sm" 
+                (click)="editarBombero(b)"
+                title="Editar bombero">
+                <i class="bi bi-pencil"></i>
+              </button>
+              <button 
+                class="btn btn-outline-danger btn-sm" 
+                (click)="eliminarBombero(b.ID_Bombero)"
+                title="Eliminar bombero">
+                <i class="bi bi-trash"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!loading && bomberos.length === 0 && !showForm" class="alert alert-warning">
+    No se encontraron bomberos registrados.
+  </div>
+</div>

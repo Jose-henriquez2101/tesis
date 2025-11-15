@@ -1,0 +1,35 @@
+<div class="dashboard-container">
+  <h2 class="dashboard-title">Dashboard</h2>
+  <p class="dashboard-subtitle">Bienvenido al Sistema VR de Entrenamiento para Bomberos</p>
+
+  <div class="cards-grid">
+    
+    <div class="card-modern">
+      <div class="card-icon">
+        <i class="bi bi-fire"></i>
+      </div>
+      <h3>Sesiones</h3>
+      <p>Gestiona las sesiones de entrenamiento</p>
+      <a [routerLink]="['/sesiones']" class="btn-modern">Ver Sesiones</a>
+    </div>
+
+    <div class="card-modern">
+      <div class="card-icon">
+        <i class="bi bi-layers"></i>
+      </div>
+      <h3>Escenarios</h3>
+      <p>Administra los escenarios disponibles</p>
+      <a [routerLink]="['/escenarios']" class="btn-modern">Ver Escenarios</a>
+    </div>
+
+    <div class="card-modern">
+      <div class="card-icon">
+        <i class="bi bi-people"></i>
+      </div>
+      <h3>Bomberos</h3>
+      <p>Gestiona el registro de bomberos</p>
+      <a [routerLink]="['/bomberos']" class="btn-modern">Ver Bomberos</a>
+    </div>
+
+  </div>
+</div>

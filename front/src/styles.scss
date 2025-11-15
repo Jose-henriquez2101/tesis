@@ -1,2 +1,11 @@
 /* You can add global styles to this file, and also import other style files */
 @import "bootstrap/dist/css/bootstrap.min.css";
+body {
+  background-color: #E7F6FF;
+  margin: 0;
+  padding: 0;
+}
+.content {
+  margin-left: 240px; /* mismo ancho que el sidebar */
+  padding: 20px;
+}

@@ -1,0 +1,80 @@
+/* Sidebar en toda la izquierda */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 240px;
+  height: 100vh;
+  background: #0F3161; /* Azul oscuro profesional */
+  display: flex;
+  flex-direction: column;
+  padding: 20px 15px;
+  color: white;
+}
+
+/* Logo */
+.logo {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.logo img {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+  margin-bottom: 15px;
+}
+
+.logo h2 {
+  font-size: 20px;
+  font-weight: bold;
+  color: white;
+}
+
+/* Lista de navegación */
+.nav-links {
+  list-style: none;
+  padding: 0;
+  flex-grow: 1; /* empuja el botón de logout hacia abajo */
+}
+
+.nav-links li {
+  margin-bottom: 20px;
+}
+
+.nav-links a {
+  color: #D0E6FF;
+  text-decoration: none;
+  font-size: 17px;
+  display: block;
+  padding: 10px 15px;
+  border-radius: 10px;
+  transition: 0.3s;
+}
+
+.nav-links a:hover {
+  background: #1C4A87;
+  color: white;
+}
+
+.active {
+  background: #1A4F9D;
+  color: white !important;
+}
+
+/* Botón cerrar sesión */
+.logout-btn {
+  background: #E63946;
+  border: none;
+  color: white;
+  padding: 12px 15px;
+  font-size: 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: 0.3s;
+  width: 100%;
+}
+
+.logout-btn:hover {
+  background: #C5303D;
+}

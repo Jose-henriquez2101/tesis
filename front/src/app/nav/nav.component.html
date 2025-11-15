@@ -1,0 +1,30 @@
+<div class="sidebar" *ngIf="authService.isLoggedIn()">
+
+  <!-- Logo -->
+  <div class="logo">
+    <img src="../../assets/logobomberos.png" alt="Logo" />
+    <h2>Sistema VR</h2>
+  </div>
+
+  <!-- Navegación -->
+  <ul class="nav-links">
+    <li>
+      <a routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
+    </li>
+    <li>
+      <a routerLink="/sesiones" routerLinkActive="active">Sesiones</a>
+    </li>
+    <li>
+      <a routerLink="/escenarios" routerLinkActive="active">Escenarios</a>
+    </li>
+    <li>
+      <a routerLink="/bomberos" routerLinkActive="active">Bomberos</a>
+    </li>
+  </ul>
+
+  <!-- Cerrar sesión -->
+  <button class="logout-btn" (click)="authService.logout()">
+    Cerrar Sesión
+  </button>
+
+</div>

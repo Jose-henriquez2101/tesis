@@ -10,6 +10,7 @@ export class AuthService {
 
   private loggedInSubject = new BehaviorSubject<boolean>(false);
   private capacitadorSubject = new BehaviorSubject<any>(null);
+  private sessionCheckPromise: Promise<boolean>;
 
   loggedIn$ = this.loggedInSubject.asObservable();
   capacitador$ = this.capacitadorSubject.asObservable();
@@ -20,8 +21,8 @@ export class AuthService {
     private http: HttpClient,
     private router: Router
   ) {
-    // Validar sesión con el backend (cookie-based).
-    this.checkSession();
+    // Iniciar validación de sesión al arrancar la app
+    this.sessionCheckPromise = this.checkSession();
   }
 
   checkSession() {
@@ -41,6 +42,11 @@ export class AuthService {
       });
   }
 
+  // Método para que el guard espere a que se valide la sesión
+  async isSessionValidated(): Promise<boolean> {
+    return this.sessionCheckPromise;
+  }
+
   login(data: { Correo: string; Contrasena: string }) {
     return this.http.post<any>(`${this.apiUrl}/login`, data, {
       withCredentials: true
@@ -50,6 +56,8 @@ export class AuthService {
         // La cookie HttpOnly se maneja automáticamente por el navegador.
         this.capacitadorSubject.next(res.capacitador);
         this.loggedInSubject.next(true);
+        // Actualizar el promise de validación de sesión para que el guard sea consciente
+        this.sessionCheckPromise = Promise.resolve(true);
         this.router.navigate(['/dashboard']);
       })
     );
@@ -62,6 +70,8 @@ export class AuthService {
         // La cookie se borra en el servidor (clearCookie).
         this.capacitadorSubject.next(null);
         this.loggedInSubject.next(false);
+        // Resetear el promise para que el guard sepa que no hay sesión
+        this.sessionCheckPromise = Promise.resolve(false);
         this.router.navigate(['/login']);
       });
   }

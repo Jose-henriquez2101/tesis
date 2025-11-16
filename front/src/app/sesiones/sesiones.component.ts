@@ -34,6 +34,15 @@ export class SesionesComponent implements OnInit, OnDestroy {
     private authService: AuthService
   ) {}
 
+  // Normalizadores para mostrar campos del capacitador con diferentes convenciones
+  get capacitadorNombre(): string {
+    return this.capacitador?.Nombre || this.capacitador?.nombre || '';
+  }
+
+  get capacitadorId(): number | null {
+    return this.capacitador?.ID_Capacitador || this.capacitador?.id || this.capacitador?.ID || null;
+  }
+
   ngOnInit(): void {
     // 1. Obtener datos del Capacitador
     this.capacitador = this.authService.getCapacitador(); // Asume que retorna el objeto Capacitador
@@ -80,12 +89,12 @@ export class SesionesComponent implements OnInit, OnDestroy {
     // Petición POST al endpoint '/api/v1/sesiones/preparar-simulacion'
     const payload = {
       idBombero: this.bomberoEnEspera.idBombero,
-      // Usamos el ID del Capacitador confirmado
-      idCapacitador: this.capacitador.ID_Capacitador, 
+      // Usamos el ID del Capacitador confirmado (normalizado)
+      idCapacitador: this.capacitadorId,
       idEscenario: this.escenarioSeleccionadoId,
       nombreEscenario: escenarioElegido.NombreEscenario,
       idInstanciaUnity: this.unityInstanceId // ID de la instancia de Unity
-    };
+    } as PrepararSimulacionPayload;
 
     this.sesionService.prepararSimulacion(payload).subscribe({
       next: (response) => {

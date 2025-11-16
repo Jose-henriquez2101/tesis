@@ -1,6 +1,7 @@
 const express = require('express');
 const http = require('http');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 const { Server } = require('socket.io');
 const { connectDB } = require('./config/database');
 const sesionRoutes = require('./routes/sesionRoutes'); 
@@ -31,9 +32,21 @@ app.set('unityClients', unityClients);
 
 // Middleware
 app.use(express.json()); // Permite a Express leer cuerpos JSON en las peticiones
+app.use(cookieParser());
 
-//Cors desde cualquier origen
-app.use(cors());
+app.use(cors({
+  origin: [
+    'http://localhost:4200',   // Angular local
+    'http://localhost',        // Unity PC local
+    'http://127.0.0.1',        // Unity PC alternativas
+    'capacitor://localhost',   // si alguna vez usas app móvil
+    'http://0.0.0.0',          // pruebas internas
+    '*'                        // permitir Unity desde dispositivo Oculus/Android
+  ],
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // Conectar a la base de datos
 connectDB();

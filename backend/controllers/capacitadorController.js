@@ -1,14 +1,35 @@
+const jwt = require('jsonwebtoken');
 const capacitadorService = require('../services/capacitadorService');
 
-// [A] POST: Login / Autenticar capacitador
+const JWT_SECRET = process.env.JWT_SECRET || 'TU_SECRETO_AQUI'; // poner en env var
+const JWT_EXPIRES = 1000 * 60 * 60 * 2; // 2 horas en ms
+
 async function loginCapacitador(req, res) {
   const { Correo, Contrasena } = req.body;
   try {
     const capacitador = await capacitadorService.autenticarCapacitador({ Correo, Contrasena });
-    // Devuelve 200 con el capacitador (sin contraseña). En producción, deberías devolver un token JWT.
-    res.status(200).json({ message: 'Autenticación exitosa', capacitador });
+
+    // Generar token (payload sin campos sensibles)
+    const token = jwt.sign({
+      id: capacitador.ID_Capacitador,
+      nombre: capacitador.Nombre,
+      correo: capacitador.Correo
+    }, JWT_SECRET, { expiresIn: '2h' });
+
+    // Enviar cookie HttpOnly
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // true en prod (HTTPS)
+      sameSite: 'lax',
+      maxAge: JWT_EXPIRES
+    });
+
+    // Responder con datos seguros del capacitador (sin contraseña)
+    return res.status(200).json({
+      message: 'Autenticación exitosa',
+      capacitador
+    });
   } catch (error) {
-    // Credenciales inválidas -> 401
     const msg = error && error.message ? error.message : 'Error de autenticación';
     if (msg.includes('Credenciales inválidas')) {
       return res.status(401).json({ message: 'Correo o contraseña incorrectos' });
@@ -99,11 +120,29 @@ async function eliminarCapacitador(req, res) {
   }
 }
 
+// devuelve lo que traiga req.user (set por auth middleware)
+function meCapacitador(req, res) {
+  if (!req.user) return res.status(401).json({ message: 'No autenticado' });
+  return res.status(200).json(req.user);
+}
+
+function logoutCapacitador(req, res) {
+  // Borra la cookie en el navegador
+  res.clearCookie('token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax'
+  });
+  return res.status(200).json({ message: 'Logout exitoso' });
+}
+
 module.exports = {
   loginCapacitador,
   crearCapacitador,
   obtenerCapacitadores,
   obtenerCapacitador,
   actualizarCapacitador,
-  eliminarCapacitador
+  eliminarCapacitador,
+  meCapacitador,
+  logoutCapacitador
 };

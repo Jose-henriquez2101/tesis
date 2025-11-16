@@ -1,33 +1,50 @@
-<div class="container mt-5" style="max-width: 400px;">
-  <h2 class="mb-4 text-center">Login Capacitador</h2>
+<div class="login-page">
+    <div class="login-box">
+        <h2 class="mb-4">🚒 Inicio sesión</h2>
 
-  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
 
-    <div class="mb-3">
-      <label class="form-label">Correo</label>
-      <input
-        type="email"
-        formControlName="Correo"
-        class="form-control"
-        placeholder="correo@example.com">
+            <div class="form-group">
+                <label class="form-label">Correo</label>
+                <input
+                    type="email"
+                    formControlName="Correo"
+                    class="form-control"
+                    placeholder="correo@example.com"
+                    [class.is-invalid]="loginForm.get('Correo')?.invalid && loginForm.get('Correo')?.touched"
+                >
+                <ng-container *ngIf="loginForm.get('Correo')?.invalid && loginForm.get('Correo')?.touched">
+                    <small *ngIf="loginForm.get('Correo')?.errors?.['required']" class="error-message">El correo es obligatorio.</small>
+                    <small *ngIf="loginForm.get('Correo')?.errors?.['email']" class="error-message">Formato de correo inválido.</small>
+                </ng-container>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Contraseña</label>
+                <input
+                    type="password"
+                    formControlName="Contrasena"
+                    class="form-control"
+                    placeholder="********"
+                    [class.is-invalid]="loginForm.get('Contrasena')?.invalid && loginForm.get('Contrasena')?.touched"
+                >
+                <small 
+                    *ngIf="loginForm.get('Contrasena')?.invalid && loginForm.get('Contrasena')?.touched && loginForm.get('Contrasena')?.errors?.['required']" 
+                    class="error-message">
+                    La contraseña es obligatoria.
+                </small>
+            </div>
+
+            <button 
+                type="submit" 
+                class="btn btn-primary w-100"
+                [disabled]="loginForm.invalid"> Iniciar Sesión
+            </button>
+
+            <p *ngIf="errorMessage" class="text-danger mt-3 text-center">
+                {{ errorMessage }}
+            </p>
+
+        </form>
     </div>
-
-    <div class="mb-3">
-      <label class="form-label">Contraseña</label>
-      <input
-        type="password"
-        formControlName="Contrasena"
-        class="form-control"
-        placeholder="********">
-    </div>
-
-    <button type="submit" class="btn btn-primary w-100">
-      Iniciar Sesión
-    </button>
-
-    <p *ngIf="errorMessage" class="text-danger mt-3 text-center">
-      {{ errorMessage }}
-    </p>
-
-  </form>
 </div>

@@ -37,11 +37,9 @@ app.use(cookieParser());
 app.use(cors({
   origin: [
     'http://localhost:4200',   // Angular local
-    'http://localhost',        // Unity PC local
-    'http://127.0.0.1',        // Unity PC alternativas
-    'capacitor://localhost',   // si alguna vez usas app móvil
-    'http://0.0.0.0',          // pruebas internas
-    '*'                        // permitir Unity desde dispositivo Oculus/Android
+    'http://localhost',        
+    'http://127.0.0.1',
+    'capacitor://localhost'
   ],
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],

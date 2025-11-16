@@ -1,46 +1,46 @@
-import { inject } from '@angular/core';
-import { Router, Route, CanActivateFn } from '@angular/router';
-import { AuthService } from './services/auth.service';
-
-// Guard para proteger rutas (typed)
-export const authGuard: CanActivateFn = () => {
-  const authService = inject(AuthService);
-  const router = inject(Router);
-
-  if (authService.isLoggedIn()) {
-    return true;
-  }
-
-  router.navigate(['/login']);
-  return false;
-}
+import { Route } from '@angular/router';
+import { authGuard } from './core/auth.guard';
 
 export const routes: Route[] = [
   {
     path: 'login',
-    loadComponent: () => import('./login-capacitador/login-capacitador').then(m => m.LoginCapacitador)
+    loadComponent: () =>
+      import('./login-capacitador/login-capacitador')
+        .then(m => m.LoginCapacitadorComponent),
   },
+
   {
     path: 'dashboard',
-    loadComponent: () => import('./dashboard/dashboard.component').then(m => m.DashboardComponent),
-    canActivate: [authGuard]
+    loadComponent: () =>
+      import('./dashboard/dashboard.component')
+        .then(m => m.DashboardComponent),
+    canActivate: [authGuard],
   },
+
   {
     path: 'escenarios',
-    loadComponent: () => import('./escenario/escenario.component').then(m => m.EscenarioComponent),
-    canActivate: [authGuard]
+    loadComponent: () =>
+      import('./escenario/escenario.component')
+        .then(m => m.EscenarioComponent),
+    canActivate: [authGuard],
   },
+
   {
     path: 'sesiones',
-    loadComponent: () => import('./sesiones/sesiones.component').then(m => m.SesionesComponent),
-    canActivate: [authGuard]
+    loadComponent: () =>
+      import('./sesiones/sesiones.component')
+        .then(m => m.SesionesComponent),
+    canActivate: [authGuard],
   },
+
   {
     path: 'bomberos',
-    loadComponent: () => import('./bombero/bombero.component').then(m => m.BomberoComponent),
-    canActivate: [authGuard]
+    loadComponent: () =>
+      import('./bombero/bombero.component')
+        .then(m => m.BomberoComponent),
+    canActivate: [authGuard],
   },
-  // Rutas auxiliares pendientes de implementar como módulos/components
+
   { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
-  { path: '**', redirectTo: '/dashboard' }
+  { path: '**', redirectTo: '/dashboard' },
 ];

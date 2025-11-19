@@ -6,12 +6,11 @@ export const authGuard: CanActivateFn = async () => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  // Esperar a que se valide la sesión con el backend
-  const isValid = await authService.isSessionValidated();
+  // SIEMPRE validar sesión con el backend
+  const ok = await authService.checkSession();
 
-  if (isValid) {
-    return true;
-  }
+  if (ok) return true;
 
   return router.parseUrl('/login');
 };
+

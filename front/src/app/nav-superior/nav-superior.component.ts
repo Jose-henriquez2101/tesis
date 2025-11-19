@@ -23,25 +23,18 @@ export class NavSuperiorComponent implements OnInit {
   constructor(private authService: AuthService) {}
 
   ngOnInit(): void {
-    // 3. Obtenemos los datos de forma síncrona usando tu método
-    this.capacitador = this.authService.getCapacitador();
+    this.authService.capacitador$.subscribe(cap => {
+      this.capacitador = cap;
 
-    if (this.capacitador) {
-      // Casteamos a 'any' temporalmente para asegurar compatibilidad con las mayúsculas/minúsculas de tu backend
-      const cap = this.capacitador as any;
-
-      this.nombreUsuario = cap.NombreCompleto || 
-                           cap.Nombre || 
-                           cap.nombre || 
-                           'Usuario';
-      
-      this.rolUsuario = cap.Rol || 
-                        cap.role || 
-                        'Capacitador';
-    } else {
-      this.nombreUsuario = '';
-      this.rolUsuario = '';
-    }
+      if (cap) {
+        const c: any = cap;
+        this.nombreUsuario = c.Nombre || c.nombre || 'Usuario';
+        this.rolUsuario = c.Rol || 'Capacitador';
+      } else {
+        this.nombreUsuario = '';
+        this.rolUsuario = '';
+      }
+    });
   }
 
   cerrarSesion(): void {

@@ -31,6 +31,8 @@
   color: white;
 }
 
+
+
 /* Lista de navegación */
 .nav-links {
   list-style: none;
@@ -77,4 +79,19 @@
 
 .logout-btn:hover {
   background: #C5303D;
+}
+
+.logo2 img {
+  width: 200px;      /* Aumenta o reduce según necesites */
+  text-align: center;
+  margin-bottom: 40px;
+  height: auto;      /* Mantiene proporción */
+}
+
+.sidebar .creditos {
+  margin-top: auto;         /* Lo empuja hacia abajo */
+  text-align: center;       /* Centrado */
+  font-size: 1.1rem;        /* Más pequeño */
+  color: #9ba4ac;           /* Color suave, no tan fuerte */
+  padding-bottom: 15px;     /* Separación del borde */
 }

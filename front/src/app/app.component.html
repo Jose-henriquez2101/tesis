@@ -1,2 +1,4 @@
+<app-nav-superior *ngIf="isLoggedIn$ | async"></app-nav-superior>
 <app-nav *ngIf="isLoggedIn$ | async"></app-nav>
+
 <router-outlet></router-outlet>

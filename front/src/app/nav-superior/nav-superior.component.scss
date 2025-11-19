@@ -1,0 +1,142 @@
+// Variables de colores (Estilo Bomberos)
+$color-primario: #b71c1c; // Rojo oscuro institucional
+$color-fondo: #0F3161;;    // Gris casi negro para el fondo
+$texto-blanco: #ffffff;
+$texto-gris: #cfcfcf;
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: $color-fondo;
+  color: $texto-blanco;
+  padding: 0.8rem 1.5rem;
+  font-family: 'Segoe UI', Roboto, sans-serif;
+  position: sticky;
+  top: 0;
+  z-index: 1000; // Asegura que esté encima de todo
+
+  // --- PARTE IZQUIERDA (Marca) ---
+  .navbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .brand-logo {
+      color: $color-primario;
+    }
+
+    h1 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin: 0;
+      border-left: 4px solid $color-primario; // Barra roja decorativa
+      padding-left: 12px;
+      letter-spacing: 0.5px;
+    }
+  }
+
+  // --- PARTE DERECHA (Usuario) ---
+  .navbar-controls {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-align: right;
+
+      .user-text {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.2;
+
+        .name {
+          font-weight: 500;
+          font-size: 0.95rem;
+        }
+
+        .role {
+          font-size: 0.75rem;
+          color: $texto-gris;
+          background-color: rgba(255, 255, 255, 0.1);
+          padding: 2px 8px;
+          border-radius: 4px;
+          align-self: flex-end;
+          text-transform: uppercase;
+          margin-top: 2px;
+        }
+      }
+
+      .user-avatar {
+        width: 38px;
+        height: 38px;
+        background-color: $color-primario;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 1.1rem;
+        border: 2px solid rgba(255,255,255,0.1);
+      }
+    }
+
+    .btn-logout {
+      background-color:  rgba(255, 2, 2, 0.699); ;
+      border: 1px solid rgba(255, 2, 2, 0.699);
+      color: $texto-blanco;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background-color: $color-primario;
+        border-color: $color-primario;
+      }
+
+      .text-logout {
+        font-size: 0.9rem;
+        font-weight: 500;
+      }
+    }
+  }
+}
+
+// --- RESPONSIVE (Para celulares) ---
+@media (max-width: 768px) {
+  .navbar {
+    padding: 0.6rem 1rem;
+
+    .navbar-brand h1 {
+      font-size: 1rem;
+      max-width: 160px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .navbar-controls {
+      gap: 10px;
+
+      // En celular ocultamos el nombre y el texto "Salir" para ahorrar espacio
+      .user-info .user-text { display: none; }
+      .btn-logout .text-logout { display: none; }
+    }
+  }
+
+
+  
+}
+
+.content {
+  margin-left: 240px; /* mismo ancho que el sidebar */
+  padding: 20px;
+}

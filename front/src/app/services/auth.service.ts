@@ -58,7 +58,7 @@ export class AuthService {
         this.loggedInSubject.next(true);
         // Actualizar el promise de validación de sesión para que el guard sea consciente
         this.sessionCheckPromise = Promise.resolve(true);
-        this.router.navigate(['/dashboard']);
+        this.router.navigate(['/Inicio']);
       })
     );
   }

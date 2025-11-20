@@ -2,6 +2,7 @@ const express = require('express');
 const http = require('http');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
+const path = require('path');
 const { Server } = require('socket.io');
 const { connectDB } = require('./config/database');
 const sesionRoutes = require('./routes/sesionRoutes'); 
@@ -33,6 +34,7 @@ app.set('unityClients', unityClients);
 // Middleware
 app.use(express.json()); // Permite a Express leer cuerpos JSON en las peticiones
 app.use(cookieParser());
+app.use(express.static(path.join(__dirname, 'assets'))); //carpeta para las imagenes
 
 app.use(cors({
   origin: [

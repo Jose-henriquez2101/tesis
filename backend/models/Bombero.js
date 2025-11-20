@@ -16,7 +16,20 @@ const Bombero = sequelize.define('Bombero', {
   NombreCompleto: {
     type: DataTypes.STRING,
     allowNull: false
-  }
+  },
+  Foto: {
+    type: DataTypes.STRING, // VARCHAR(255)
+      allowNull: true,
+      // Almacenaremos la ruta relativa, ej: "bomberos/bombero-42-1701234567.jpg"
+  },
+  FechaNacimiento: {
+    type: DataTypes.DATEONLY,
+    allowNull: true
+  },
+  FechaDeIncorporacion: {
+    type: DataTypes.DATEONLY,
+    allowNull: true
+  },
 }, {
   tableName: 'Bombero',
   timestamps: false

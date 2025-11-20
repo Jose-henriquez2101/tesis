@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const bomberoController = require('../controllers/bomberoController');
+const uploadPhoto = require('../middlewares/multerConfig');
 
 // Rutas base: /api/v1/bomberos
 
@@ -14,6 +15,9 @@ router.get('/', bomberoController.obtenerBomberos);
 router.get('/:id', bomberoController.obtenerBombero);
 router.put('/:id', bomberoController.actualizarBombero);
 router.delete('/:id', bomberoController.eliminarBombero);
+
+//Foto de bombero (del middleware multerConfig)
+router.put('/:bomberoId/foto', uploadPhoto.single('foto'), bomberoController.uploadFotoBombero);
 
 
 module.exports = router;

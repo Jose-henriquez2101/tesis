@@ -1,0 +1,46 @@
+<div class="recuperar-container">
+  <div class="recuperar-card">
+    <div class="logo-container">
+      <h1>🔥 Sistema VR Bomberos</h1>
+    </div>
+
+    <h2>Recuperar Contraseña</h2>
+    <p class="instrucciones">
+      Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.
+    </p>
+
+    <!-- Mensajes de éxito o error -->
+    <div *ngIf="mensaje" class="mensaje" [ngClass]="mensajeTipo">
+      <span>{{ mensaje }}</span>
+    </div>
+
+    <form (ngSubmit)="onSubmit()" #recuperarForm="ngForm">
+      <div class="form-group">
+        <label for="correo">Correo Electrónico</label>
+        <input
+          type="email"
+          id="correo"
+          name="correo"
+          [(ngModel)]="correo"
+          placeholder="correo@ejemplo.com"
+          required
+          email
+          [disabled]="enviando"
+        />
+      </div>
+
+      <button 
+        type="submit" 
+        class="btn-primary" 
+        [disabled]="enviando || !recuperarForm.valid"
+      >
+        <span *ngIf="!enviando">Enviar Enlace de Recuperación</span>
+        <span *ngIf="enviando">Enviando...</span>
+      </button>
+    </form>
+
+    <div class="footer-links">
+      <a routerLink="/login" class="link">Volver al Inicio de Sesión</a>
+    </div>
+  </div>
+</div>

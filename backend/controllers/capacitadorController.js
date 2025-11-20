@@ -1,5 +1,8 @@
 const jwt = require('jsonwebtoken');
 const capacitadorService = require('../services/capacitadorService');
+const emailService = require('../services/emailService');
+const Capacitador = require('../models/Capacitador');
+const bcrypt = require('bcrypt');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'TU_SECRETO_AQUI'; // poner en env var
 const JWT_EXPIRES = 1000 * 60 * 60 * 2; // 2 horas en ms
@@ -136,6 +139,115 @@ function logoutCapacitador(req, res) {
   return res.status(200).json({ message: 'Logout exitoso' });
 }
 
+// Solicitar recuperación de contraseña
+async function solicitarRecuperacionContrasena(req, res) {
+  const { Correo } = req.body;
+
+  try {
+    // Buscar el capacitador por correo
+    const capacitador = await Capacitador.findOne({ where: { Correo } });
+
+    if (!capacitador) {
+      // Por seguridad, no revelamos si el correo existe o no
+      return res.status(200).json({
+        message: 'Si el correo existe, recibirás un enlace de recuperación'
+      });
+    }
+
+    // Generar token de recuperación
+    const resetToken = emailService.generarTokenRecuperacion();
+    const resetTokenExpiry = new Date(Date.now() + 3600000); // 1 hora
+
+    // Guardar token en la base de datos
+    capacitador.ResetToken = resetToken;
+    capacitador.ResetTokenExpiry = resetTokenExpiry;
+    await capacitador.save();
+
+    // Enviar email
+    await emailService.enviarEmailRecuperacion(
+      capacitador.Correo,
+      resetToken,
+      capacitador.Nombre
+    );
+
+    return res.status(200).json({
+      message: 'Si el correo existe, recibirás un enlace de recuperación'
+    });
+  } catch (error) {
+    console.error('Error en solicitarRecuperacionContrasena:', error);
+    return res.status(500).json({
+      message: 'Error al procesar la solicitud de recuperación',
+      error: error.message
+    });
+  }
+}
+
+// Restablecer contraseña con token
+async function restablecerContrasena(req, res) {
+  const { token, nuevaContrasena } = req.body;
+
+  try {
+    // Validar que se proporcionen los datos necesarios
+    if (!token || !nuevaContrasena) {
+      return res.status(400).json({
+        message: 'Token y nueva contraseña son requeridos'
+      });
+    }
+
+    // Validar longitud de contraseña
+    if (nuevaContrasena.length < 6) {
+      return res.status(400).json({
+        message: 'La contraseña debe tener al menos 6 caracteres'
+      });
+    }
+
+    // Buscar capacitador con el token válido
+    const capacitador = await Capacitador.findOne({
+      where: {
+        ResetToken: token
+      }
+    });
+
+    if (!capacitador) {
+      return res.status(400).json({
+        message: 'Token inválido o expirado'
+      });
+    }
+
+    // Verificar que el token no haya expirado
+    if (new Date() > new Date(capacitador.ResetTokenExpiry)) {
+      return res.status(400).json({
+        message: 'El token ha expirado. Solicita un nuevo enlace de recuperación'
+      });
+    }
+
+    // Hashear la nueva contraseña
+    const hashedPassword = await bcrypt.hash(nuevaContrasena, 10);
+
+    // Actualizar contraseña y limpiar tokens
+    capacitador.Contrasena = hashedPassword;
+    capacitador.ResetToken = null;
+    capacitador.ResetTokenExpiry = null;
+    await capacitador.save();
+
+    // Enviar email de confirmación
+    await emailService.enviarEmailConfirmacionCambio(
+      capacitador.Correo,
+      capacitador.Nombre
+    );
+
+    return res.status(200).json({
+      message: 'Contraseña actualizada exitosamente'
+    });
+  } catch (error) {
+    console.error('Error en restablecerContrasena:', error);
+    return res.status(500).json({
+      message: 'Error al restablecer la contraseña',
+      error: error.message
+    });
+  }
+}
+
 module.exports = {
   loginCapacitador,
   crearCapacitador,
@@ -144,5 +256,7 @@ module.exports = {
   actualizarCapacitador,
   eliminarCapacitador,
   meCapacitador,
-  logoutCapacitador
+  logoutCapacitador,
+  solicitarRecuperacionContrasena,
+  restablecerContrasena
 };

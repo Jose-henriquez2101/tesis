@@ -20,6 +20,16 @@ const Capacitador = sequelize.define('Capacitador', {
   Contrasena: {
     type: DataTypes.STRING,
     allowNull: false
+  },
+  ResetToken: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    field: 'ResetToken'
+  },
+  ResetTokenExpiry: {
+    type: DataTypes.DATE,
+    allowNull: true,
+    field: 'ResetTokenExpiry'
   }
 }, {
   tableName: 'Capacitador',

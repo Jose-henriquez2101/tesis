@@ -1,0 +1,95 @@
+<div class="restablecer-container">
+  <div class="restablecer-card">
+    <div class="logo-container">
+      <h1>🔥 Sistema VR Bomberos</h1>
+    </div>
+
+    <h2>Restablecer Contraseña</h2>
+    <p class="instrucciones" *ngIf="tokenValido">
+      Ingresa tu nueva contraseña a continuación.
+    </p>
+
+    <!-- Mensajes de éxito o error -->
+    <div *ngIf="mensaje" class="mensaje" [ngClass]="mensajeTipo">
+      <span>{{ mensaje }}</span>
+    </div>
+
+    <form (ngSubmit)="onSubmit()" #restablecerForm="ngForm" *ngIf="tokenValido">
+      <!-- Nueva Contraseña -->
+      <div class="form-group">
+        <label for="nuevaContrasena">Nueva Contraseña</label>
+        <div class="password-input-wrapper">
+          <input
+            [type]="mostrarContrasena ? 'text' : 'password'"
+            id="nuevaContrasena"
+            name="nuevaContrasena"
+            [(ngModel)]="nuevaContrasena"
+            placeholder="Ingresa tu nueva contraseña"
+            required
+            minlength="6"
+            [disabled]="procesando"
+          />
+          <button 
+            type="button" 
+            class="toggle-password" 
+            (click)="toggleMostrarContrasena()"
+            [disabled]="procesando"
+          >
+            <span *ngIf="!mostrarContrasena">👁️</span>
+            <span *ngIf="mostrarContrasena">🙈</span>
+          </button>
+        </div>
+        <div class="password-strength" *ngIf="nuevaContrasena.length > 0">
+          <div class="strength-bar" [ngClass]="getStrengthClass()"></div>
+          <span class="strength-text">{{ getStrengthText() }}</span>
+        </div>
+      </div>
+
+      <!-- Confirmar Contraseña -->
+      <div class="form-group">
+        <label for="confirmarContrasena">Confirmar Contraseña</label>
+        <div class="password-input-wrapper">
+          <input
+            [type]="mostrarConfirmacion ? 'text' : 'password'"
+            id="confirmarContrasena"
+            name="confirmarContrasena"
+            [(ngModel)]="confirmarContrasena"
+            placeholder="Confirma tu nueva contraseña"
+            required
+            [disabled]="procesando"
+          />
+          <button 
+            type="button" 
+            class="toggle-password" 
+            (click)="toggleMostrarConfirmacion()"
+            [disabled]="procesando"
+          >
+            <span *ngIf="!mostrarConfirmacion">👁️</span>
+            <span *ngIf="mostrarConfirmacion">🙈</span>
+          </button>
+        </div>
+        <div class="password-match" *ngIf="confirmarContrasena.length > 0">
+          <span *ngIf="nuevaContrasena === confirmarContrasena" class="match">
+            ✓ Las contraseñas coinciden
+          </span>
+          <span *ngIf="nuevaContrasena !== confirmarContrasena" class="no-match">
+            ✗ Las contraseñas no coinciden
+          </span>
+        </div>
+      </div>
+
+      <button 
+        type="submit" 
+        class="btn-primary" 
+        [disabled]="procesando || !restablecerForm.valid || nuevaContrasena !== confirmarContrasena"
+      >
+        <span *ngIf="!procesando">Restablecer Contraseña</span>
+        <span *ngIf="procesando">Procesando...</span>
+      </button>
+    </form>
+
+    <div class="footer-links">
+      <a routerLink="/login" class="link">Volver al Inicio de Sesión</a>
+    </div>
+  </div>
+</div>

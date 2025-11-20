@@ -10,6 +10,20 @@ export const routes: Route[] = [
   },
 
   {
+    path: 'recuperar-contrasena',
+    loadComponent: () =>
+      import('./recuperar-contrasena-component/recuperar-contrasena.component')
+        .then(m => m.RecuperarContrasenaComponent),
+  },
+
+  {
+    path: 'restablecer-contrasena',
+    loadComponent: () =>
+      import('./restablecer-contrasena-component/restablecer-contrasena.component')
+        .then(m => m.RestablecerContrasenaComponent),
+  },
+
+  {
     path: 'Inicio',
     loadComponent: () =>
       import('./dashboard/dashboard.component')

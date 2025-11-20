@@ -11,6 +11,10 @@ router.get('/', auth, capacitadorController.obtenerCapacitadores);
 router.post('/logout', capacitadorController.logoutCapacitador); // opcional
 router.get('/me', auth, capacitadorController.meCapacitador);   // nuevo endpoint protegido
 
+// Rutas de recuperación de contraseña
+router.post('/recuperar-contrasena', capacitadorController.solicitarRecuperacionContrasena);
+router.post('/restablecer-contrasena', capacitadorController.restablecerContrasena);
+
 router.get('/:id', auth, capacitadorController.obtenerCapacitador);
 router.put('/:id', auth, capacitadorController.actualizarCapacitador);
 router.delete('/:id', auth, capacitadorController.eliminarCapacitador);

@@ -91,3 +91,12 @@
   margin-left: 240px; /* mismo ancho que el sidebar */
   padding: 20px;
 }
+.bombero-foto {
+  width: 60px; /* Tamaño de la miniatura */
+  height: 60px;
+  object-fit: cover;
+  border-radius: 50%; /* Circular */
+  border: 2px solid #3498db;
+  flex-shrink: 0; /* Evita que la imagen se reduzca en contenedores flexibles */
+  display: block; /* Para manejar correctamente el tamaño */
+}

@@ -16,6 +16,7 @@ const httpServer = http.createServer(app);
 const PORT = process.env.PORT || 3000;
 
 // Inicializar Socket.io
+// Hacer el objeto io y unityClients accesibles globalmente para los controladores
 const io = new Server(httpServer, {
   cors: {
     origin: "*", // Permite la conexión desde cualquier origen (Angular, Unity)
@@ -26,6 +27,7 @@ const io = new Server(httpServer, {
 // Almacenamos los clientes Unity conectados para enviar mensajes dirigidos
 // Clave: ID Único de Unity (debe ser enviado por Unity). Valor: Socket.id
 const unityClients = new Map();
+app.set('unityClients', unityClients);
 
 // Hacer el objeto io y unityClients accesibles globalmente para los controladores
 app.set('socketio', io);
@@ -55,11 +57,37 @@ connectDB();
 io.on('connection', (socket) => {
   console.log(`Cliente conectado: ${socket.id}`);
 
-  // Unity debe enviar un ID único al conectarse (ej. el ID de la estación VR)
+  // UNITY: Registra su ID de estación VR
   socket.on('register-unity', (unityId) => {
-    unityClients.set(unityId, socket.id);
-    console.log(`Unity cliente registrado con ID: ${unityId}. Clientes activos: ${unityClients.size}`);
-  });
+    unityClients.set(unityId, socket.id);
+    console.log(`Unity cliente registrado con ID: ${unityId}. Clientes activos: ${unityClients.size}`);
+  });
+  // UNITY: Notifica que ha presionado "Iniciar Simulación"
+  socket.on('unity-ready', (unityId) => {
+    // Paso intermedio: El Backend notifica a Angular que una estación Unity está lista.
+    // Esto lo hacemos enviando a TODOS los clientes (incluido Angular)
+    io.emit('select-bombero', { stationId: unityId }); 
+    console.log(`Evento 'unity-ready' recibido de ${unityId}. Notificando a Angular.`);
+  });
+
+  // ANGULAR: Recibe el evento de Unity, el Capacitador selecciona y envía la decisión
+  // NOTA: Este evento lo debe enviar el Panel Angular (el Cliente Capacitador).
+  socket.on('start-vr-session', (data) => {
+    const { stationId, idBombero, scenarioName } = data;
+    console.log(`Petición de Angular: Iniciar ${scenarioName} para Bombero ${idBombero} en Estación ${stationId}`);
+
+    const targetSocketId = unityClients.get(stationId);
+
+    if (targetSocketId) {
+      // Enviar el escenario SOLAMENTE al Socket de la estación VR
+      io.to(targetSocketId).emit('load-scenario', scenarioName); 
+      console.log(`Escenario ${scenarioName} enviado a Unity: ${stationId}`);
+    } else {
+      console.error(`Error: Estación Unity ${stationId} no encontrada para envío dirigido.`);
+      // Opcional: Notificar a Angular que el envío falló
+      socket.emit('session-error', { message: `Estación ${stationId} no está conectada.` });
+    }
+  });
 
   socket.on('disconnect', () => {
     // Limpiar el cliente Unity si se desconecta

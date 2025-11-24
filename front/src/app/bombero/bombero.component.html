@@ -143,7 +143,13 @@
 
               <div class="flex-grow-1">
                 <h5 class="card-title text-primary">{{ b.NombreCompleto }}</h5>
-                <p class="mb-2"><strong>RUT:</strong> {{ b.Rut }}</p>
+                <p class="card-text small mb-0"><strong>RUT:</strong> {{ b.Rut }}</p>
+                <p class="card-text small mb-0" *ngIf="b.FechaNacimiento">
+                    <strong>Nacimiento:</strong> {{ b.FechaNacimiento | date:'dd/MM/yyyy' }}
+                </p>
+                <p class="card-text small mb-1" *ngIf="b.FechaDeIncorporacion">
+                    <strong>Incorporación:</strong> {{ b.FechaDeIncorporacion | date:'dd/MM/yyyy' }}
+                </p>
                 <small class="text-muted">ID: {{ b.ID_Bombero }}</small>
               </div>
 

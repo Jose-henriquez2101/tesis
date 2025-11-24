@@ -73,15 +73,15 @@ io.on('connection', (socket) => {
   // ANGULAR: Recibe el evento de Unity, el Capacitador selecciona y envía la decisión
   // NOTA: Este evento lo debe enviar el Panel Angular (el Cliente Capacitador).
   socket.on('start-vr-session', (data) => {
-    const { stationId, idBombero, scenarioName } = data;
-    console.log(`Petición de Angular: Iniciar ${scenarioName} para Bombero ${idBombero} en Estación ${stationId}`);
+    const { stationId, idBombero, idEscenario } = data;
+    console.log(`Petición de Angular: Iniciar Escenario ID ${idEscenario} para Bombero ${idBombero} en Estación ${stationId}`);
 
     const targetSocketId = unityClients.get(stationId);
 
     if (targetSocketId) {
-      // Enviar el escenario SOLAMENTE al Socket de la estación VR
-      io.to(targetSocketId).emit('load-scenario', scenarioName); 
-      console.log(`Escenario ${scenarioName} enviado a Unity: ${stationId}`);
+      // ENVIAR SOLAMENTE EL ID DE ESCENARIO
+      io.to(targetSocketId).emit('load-scenario', idEscenario); // <--- CAMBIO CLAVE
+      console.log(`Comando de carga de Escenario ID ${idEscenario} enviado a Unity: ${stationId}`);
     } else {
       console.error(`Error: Estación Unity ${stationId} no encontrada para envío dirigido.`);
       // Opcional: Notificar a Angular que el envío falló

@@ -1,65 +1,68 @@
 <div class="content">
-  <div class="container mt-4">
+<div class="container mt-4">
+  <h2>Panel de Control - Sesiones VR</h2>
+  <p class="capacitador-info">
+    👤 Capacitador: <strong>{{ capacitadorNombre }}</strong>
+    <span class="id-tag">ID {{ capacitadorId }}</span>
+  </p>
+    
 
-    <div class="header">
-      <h2>Sesión de Entrenamiento VR</h2>
-      <p class="capacitador-info">
-        👤 Capacitador: <strong>{{ capacitadorNombre }}</strong>
-        <span class="id-tag">ID {{ capacitadorId }}</span>
-      </p>
-    </div>
+    <!-- Mensajes de estado -->
+    <div *ngIf="loading" class="alert alert-info">Cargando datos...</div>
+    <div *ngIf="errorMsg" class="alert alert-danger">{{ errorMsg }}</div>
+    <div *ngIf="successMsg" class="alert alert-success">{{ successMsg }}</div>
 
-    <!-- Estado del bombero -->
-    <div *ngIf="bomberoEnEspera; else esperando" class="card-moderno fade-in">
+    <!-- Interfaz de Asignación de Sesión (se muestra cuando hay una estación Unity en espera) -->
+    <div *ngIf="pendingStationId; else esperando" class="card-moderno fade-in">
 
-      <h3 class="section-title">Bombero Listo en la VR</h3>
+      <h3 class="section-title">Asignar Sesión a Estación VR</h3>
 
-      <div class="info-grid">
-        <div class="info-item">
-          <span>Nombre:</span>
-          <strong>{{ bomberoEnEspera.nombre }}</strong>
-        </div>
+      <div class="info-grid mb-4">
+        <div class="info-item">
+          <span>Estación VR en Espera:</span>
+          <strong>{{ pendingStationId }}</strong>
+        </div>
+      </div>
 
-        <div class="info-item">
-          <span>RUT:</span>
-          <strong>{{ bomberoEnEspera.rut }}</strong>
-        </div>
+      <div class="select-box">
+        <label>Seleccionar Bombero a Evaluar:</label>
+        <select [(ngModel)]="bomberoSeleccionadoId" name="bomberoSelect">
+          <option [ngValue]="null" disabled>-- Elija un Bombero --</option>
+          <option *ngFor="let b of bomberosDisponibles" [ngValue]="b.ID_Bombero">
+            {{ b.NombreCompleto }} (RUT: {{ b.Rut }})
+          </option>
+        </select>
+      </div>
 
-        <div class="info-item">
-          <span>Instancia Unity:</span>
-          <strong>{{ unityInstanceId }}</strong>
-        </div>
-      </div>
+      <div class="select-box">
+        <label>Seleccionar Escenario de Entrenamiento:</label>
+        <select [(ngModel)]="escenarioSeleccionadoId" name="escenarioSelect">
+          <option [ngValue]="null" disabled>-- Elija un Escenario --</option>
+          <option *ngFor="let esc of escenarios" [ngValue]="esc.id_Escenario">
+            {{ esc.NombreEscenario }}
+          </option>
+        </select>
+      </div>
 
-      <div class="select-box">
-        <label>Seleccionar Escenario:</label>
-        <select [(ngModel)]="escenarioSeleccionadoId">
-          <option *ngFor="let esc of escenarios" [ngValue]="esc.id_Escenario">
-            {{ esc.NombreEscenario }}
-          </option>
-        </select>
-      </div>
+      <button 
+        class="btn-modern"
+        (click)="iniciarSimulacion()"
+        [disabled]="!bomberoSeleccionadoId || !escenarioSeleccionadoId || loading"
+      >
+        {{ loading ? 'Enviando Comando...' : 'Asignar Bombero e Iniciar Simulación' }}
+      </button>
 
-      <button 
-        class="btn-modern"
-        (click)="iniciarSimulacion()"
-        [disabled]="!escenarioSeleccionadoId"
-      >
-        Iniciar Simulación VR
-      </button>
+    </div>
 
-    </div>
+    <!-- Plantilla de espera -->
+    <ng-template #esperando>
+      <div class="waiting-card fade-in">
+        <h3>⏳ Esperando señal de la estación VR...</h3>
+        <p>
+          El bombero debe presionar "Iniciar Simulación" en el visor.
+        </p>
+      </div>
+    </ng-template>
 
-    <!-- Plantilla de espera -->
-    <ng-template #esperando>
-      <div class="waiting-card fade-in">
-        <h3>⏳ Esperando al bombero...</h3>
-        <p>
-          La unidad VR aún no ha enviado un bombero listo.  
-          Mantente atento para seleccionar el escenario.
-        </p>
-      </div>
-    </ng-template>
-
-  </div>
+</div>
 </div>

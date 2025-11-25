@@ -9,7 +9,7 @@ import { Observable } from 'rxjs';
 export class SocketService {
   private socket: Socket;
   // URL de tu servidor Node.js (donde está corriendo Socket.io)
-  private readonly URL = 'http://localhost:3000'; 
+  private readonly URL = 'http://pacheco.chillan.ubiobio.cl:8020'; 
 
   constructor() {
     // Conexión al servidor al inicializar el servicio

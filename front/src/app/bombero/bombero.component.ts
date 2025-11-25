@@ -36,7 +36,7 @@ export class BomberoComponent implements OnInit, OnDestroy {
   bomberoAEliminarNombre: string = ''; // Para mostrar el nombre en el modal
 
   // URL base para acceder a la API de Node.js (Asegúrate que coincida)
-  private readonly API_BASE_URL = 'http://localhost:3000'; 
+  private readonly API_BASE_URL = 'http://pacheco.chillan.ubiobio.cl:8020'; 
   fileToUpload: File | null = null; // Para la foto
 
   constructor(private bomberoService: BomberoService) {}

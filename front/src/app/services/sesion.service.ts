@@ -22,7 +22,7 @@ export interface PrepararSimulacionPayload {
   providedIn: 'root' 
 })
 export class SesionService {
-  private apiUrl = 'http://localhost:3000/api/v1'; // Base de la API
+  private apiUrl = 'http://pacheco.chillan.ubiobio.cl:8020/api/v1'; // Base de la API
 
   constructor(private http: HttpClient) { }
 

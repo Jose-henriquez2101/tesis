@@ -19,7 +19,7 @@ export interface Bombero {
 })
 export class BomberoService {
   // Cambia esta URL según donde corra tu backend
-  private apiUrl = 'http://localhost:3000/api/v1/bomberos'; 
+  private apiUrl = 'http://pacheco.chillan.ubiobio.cl:8020/api/v1/bomberos'; 
 
   constructor(private http: HttpClient) {}
 

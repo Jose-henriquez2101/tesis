@@ -60,7 +60,7 @@ export class RestablecerContrasenaComponent implements OnInit {
     this.procesando = true;
     this.mensaje = '';
 
-    this.http.post('http://localhost:3000/api/v1/capacitadores/restablecer-contrasena', {
+    this.http.post('http://pacheco.chillan.ubiobio.cl:8020/api/v1/capacitadores/restablecer-contrasena', {
       token: this.token,
       nuevaContrasena: this.nuevaContrasena
     }).subscribe({

@@ -22,7 +22,7 @@ async function loginCapacitador(req, res) {
     // Enviar cookie HttpOnly
     res.cookie('token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // true en prod (HTTPS)
+      secure: false, // true en prod (HTTPS)
       sameSite: 'lax',
       maxAge: JWT_EXPIRES
     });

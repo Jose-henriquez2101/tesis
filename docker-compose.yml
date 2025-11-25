@@ -1,0 +1,39 @@
+version: "3.9"
+
+services:
+  backend:
+    build: ./backend
+    container_name: backend
+    ports:
+      - "8020:8020"
+    environment:
+      DB_HOST: database-1.cviuucgewncq.us-east-2.rds.amazonaws.com
+      DB_USER: admin
+      DB_PASSWORD: admin123
+      DB_NAME: tesis
+      DB_DIALECT: mysql
+      
+      NODE_ENV: production
+      JWT_SECRET: 5be6b189f4561c246d689e8b49cf810fb29ec137b9f663e71fce19f6ff4c7e6af73e3d982be5bd06e1dae957210b035fdfb33c3da4cbbf0d560d84264e1d0e72
+      JWT_EXPIRES: 1d
+      PORT: 8020
+
+    volumes:
+      - uploads:/app/assets/bombero
+    networks:
+      - app-net
+
+  frontend:
+    build: ./front
+    container_name: frontend
+    ports:
+      - "8021:80"
+    networks:
+      - app-net
+
+volumes:
+  uploads:
+
+networks:
+  app-net:
+    driver: bridge

@@ -41,6 +41,7 @@ app.use(express.static(path.join(__dirname, 'assets'))); //carpeta para las imag
 app.use(cors({
   origin: [
     'http://localhost:4200',   // Angular local
+    'http://pacheco.chillan.ubiobio.cl:8021', // Angular producción
     'http://localhost',        
     'http://127.0.0.1',
     'capacitor://localhost'

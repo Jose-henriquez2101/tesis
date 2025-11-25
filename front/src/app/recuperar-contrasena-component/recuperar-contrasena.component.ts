@@ -31,7 +31,7 @@ export class RecuperarContrasenaComponent {
     this.enviando = true;
     this.mensaje = '';
 
-    this.http.post('http://localhost:3000/api/v1/capacitadores/recuperar-contrasena', {
+    this.http.post('http://pacheco.chillan.ubiobio.cl:8020/api/v1/capacitadores/recuperar-contrasena', {
       Correo: this.correo
     }).subscribe({
       next: (response: any) => {

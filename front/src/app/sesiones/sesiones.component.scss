@@ -37,6 +37,25 @@
   border: 1px solid rgba(255,255,255,0.5);
 }
 
+/* Lista de sesiones desplazable */
+.sesiones-list {
+  max-height: 360px; /* ajusta según diseño */
+  overflow-y: auto;
+  padding-right: 8px; /* espacio para el scrollbar */
+}
+
+/* Mejora visual del scrollbar en navegadores WebKit */
+.sesiones-list::-webkit-scrollbar {
+  width: 10px;
+}
+.sesiones-list::-webkit-scrollbar-thumb {
+  background: rgba(59,130,246,0.35);
+  border-radius: 8px;
+}
+.sesiones-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 .section-title {
   margin-bottom: 20px;
   font-size: 1.4rem;

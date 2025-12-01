@@ -44,6 +44,11 @@
         </select>
       </div>
 
+      <div class="form-check mb-3">
+        <input class="form-check-input" type="checkbox" id="grabarCheck" [(ngModel)]="grabarAudio" name="grabarAudio">
+        <label class="form-check-label" for="grabarCheck">Grabar audio durante la simulación</label>
+      </div>
+
       <button 
         class="btn-modern"
         (click)="iniciarSimulacion()"
@@ -64,5 +69,54 @@
       </div>
     </ng-template>
 
+    <!-- Lista de sesiones pasadas -->
+    <div class="card-moderno mt-4">
+      <h3 class="section-title">Sesiones Pasadas</h3>
+      <p class="small text-muted">Haz clic en una sesión para ver los detalles.</p>
+
+      <div *ngIf="(sesiones?.length || 0) === 0" class="alert alert-info">
+        No hay sesiones registradas aún.
+      </div>
+
+      <div class="sesiones-list" *ngIf="(sesiones?.length || 0) > 0">
+        <div class="list-group">
+          <button type="button" class="list-group-item list-group-item-action"
+                  *ngFor="let s of sesiones" (click)="selectedSesion = (selectedSesion === s ? null : s)">
+            <div class="d-flex w-100 justify-content-between">
+              <h5 class="mb-1">Sesión {{ s.ID_Sesion || s.id || '—' }}</h5>
+              <small class="text-muted">{{ (s.Fecha || s.fecha || s.createdAt) ? ((s.Fecha || s.fecha || s.createdAt) | date:'dd/MM/yyyy HH:mm') : '' }}</small>
+            </div>
+            <p class="mb-1">Escenario: {{ s.escenario?.NombreEscenario || s.nombreEscenario || 'N/D' }}</p>
+            <small>Participante: {{ s.bombero?.NombreCompleto || s.nombreBombero || 'N/D' }}</small>
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="selectedSesion" class="mt-3">
+        <h5>Detalle Sesión</h5>
+        <p><strong>Escenario:</strong> {{ selectedSesion.escenario?.NombreEscenario || selectedSesion.nombreEscenario }}</p>
+        <p><strong>Bombero:</strong> {{ selectedSesion.bombero?.NombreCompleto || selectedSesion.nombreBombero }}</p>
+        <p *ngIf="selectedSesion.Fecha || selectedSesion.fecha || selectedSesion.createdAt"><strong>Fecha:</strong> {{ (selectedSesion.Fecha || selectedSesion.fecha || selectedSesion.createdAt) | date:'dd/MM/yyyy HH:mm' }}</p>
+        
+        <!-- Reproductor de audio si existe en BD (se solicita al backend) -->
+        <div>
+          <h6>Grabación de la sesión</h6>
+          <div class="mb-2">
+            <button class="btn btn-sm btn-outline-primary" (click)="loadAndPlayAudio(selectedSesion)">Cargar y Reproducir</button>
+            <span *ngIf="loading" class="text-muted"> Cargando audio...</span>
+          </div>
+          <audio id="audioPlayer" controls *ngIf="audioUrl" [src]="audioUrl"></audio>
+        </div>
+
+        <!-- Formulario para subir audio (útil para pruebas desde UI o para reemplazar) -->
+        <div class="mt-2">
+          <label class="form-label">Subir/Actualizar audio de la sesión (prueba)</label>
+          <input type="file" accept="audio/*" (change)="onAudioFileSelected($event)" />
+          <div class="mt-2">
+            <button class="btn btn-sm btn-primary" (click)="uploadAudioForSelectedSesion()" [disabled]="loading || !audioFileToUpload">Subir audio</button>
+          </div>
+        </div>
+      </div>
+    </div>
 </div>
 </div>

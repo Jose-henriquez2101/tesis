@@ -18,6 +18,10 @@ const SesionEntrenamiento = sequelize.define('SesionEntrenamiento', {
     allowNull: false
   },
   Audio_Sesion: {
+    type: DataTypes.BLOB('medium'),
+    allowNull: true
+  },
+  Audio_Mime: {
     type: DataTypes.STRING,
     allowNull: true
   },

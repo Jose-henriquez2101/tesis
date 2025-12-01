@@ -41,4 +41,28 @@ export class SesionService {
     // Usamos el endpoint que configuramos en el backend:
     return this.http.post(`${this.apiUrl}/sesiones/preparar-simulacion`, payload);
   }
+
+  /**
+   * 3. Obtener todas las sesiones registradas (GET /api/v1/sesiones)
+   */
+  getSesiones(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/sesiones`);
+  }
+
+  /**
+   * 4. Obtener sesiones de un bombero específico (GET /api/v1/sesiones/bomberos/:id)
+   */
+  getSesionesPorBombero(idBombero: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/sesiones/bomberos/${idBombero}`);
+  }
+
+  /** Subir audio para una sesión (PUT /api/v1/sesiones/:id/audio) */
+  uploadAudio(sessionId: number | string, formData: FormData) {
+    return this.http.put(`${this.apiUrl}/sesiones/${sessionId}/audio`, formData);
+  }
+
+  /** Obtener audio de sesión como Blob (GET /api/v1/sesiones/:id/audio) */
+  getAudio(sessionId: number | string) {
+    return this.http.get(`${this.apiUrl}/sesiones/${sessionId}/audio`, { responseType: 'blob' });
+  }
 }

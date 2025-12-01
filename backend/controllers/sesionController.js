@@ -1,4 +1,7 @@
 const sesionService = require('../services/sesionService');
+const path = require('path');
+const fs = require('fs');
+const { SesionEntrenamiento } = require('../models');
 
 // [C] CREATE: Controlador para registrar una nueva sesión (POST /api/sesiones)
 async function crearSesion(req, res) {
@@ -24,20 +27,35 @@ async function crearSesion(req, res) {
 // [C] POST: Controlador para que Angular envíe la configuración final
 async function prepararSimulacion(req, res) {
   // Datos enviados por Angular
-  const { idBombero, idCapacitador, idEscenario, nombreEscenario, idInstanciaUnity } = req.body; 
+  const { idBombero, idCapacitador, idEscenario, nombreEscenario, idInstanciaUnity, grabar } = req.body; 
 
   if (!idBombero || !idCapacitador || !idEscenario || !idInstanciaUnity) {
     return res.status(400).json({ message: 'Faltan datos de configuración para iniciar la simulación.' });
   }
 
   try {
-    // 1. (OPCIONAL) Lógica de registro de SesiónEntrenamiento en la BD
-    // Puedes usar aquí el servicio de sesiones para crear un registro con estado "INICIADA"
-    
+    // 1. Registrar la sesión en la base de datos (Fecha actual, duración 0 por defecto)
+    const datosSesion = {
+      Duracion: '00:00:00',
+      Fecha: new Date(),
+      ID_Bombero_FK: idBombero,
+      ID_Capacitador_FK: idCapacitador,
+      ID_Escenario_FK: idEscenario
+    };
+
+    let nuevaSesion = null;
+    try {
+      nuevaSesion = await sesionService.registrarNuevaSesion(datosSesion);
+      console.log('✅ Sesión registrada en BD:', nuevaSesion.ID_Sesion || nuevaSesion.id || nuevaSesion);
+    } catch (dbErr) {
+      console.warn('⚠️ No se pudo registrar la sesión en BD, pero seguiremos con la preparación de la simulación:', dbErr.message || dbErr);
+      // No bloqueamos el envío a Unity por errores de BD
+    }
+
     // 2. Obtener la instancia de Socket.io y la lista de clientes Unity
     const io = req.app.get('socketio');
     const unityClients = req.app.get('unityClients');
-    
+
     // 3. Obtener el socket ID de la instancia de Unity a la que apuntamos
     const unitySocketId = unityClients.get(idInstanciaUnity);
 
@@ -53,13 +71,16 @@ async function prepararSimulacion(req, res) {
       evento: "iniciar-simulacion",
       data: {
         idEscenario: idEscenario,
-        nombreEscenario: nombreEscenario 
+        nombreEscenario: nombreEscenario,
+        grabar: !!grabar,
+        sessionId: nuevaSesion ? (nuevaSesion.ID_Sesion || nuevaSesion.id) : null
       }
     });
 
     res.status(200).json({
       message: 'Simulación preparada y evento de escenario enviado a Unity.',
-      targetUnityId: idInstanciaUnity
+      targetUnityId: idInstanciaUnity,
+      sesion: nuevaSesion
     });
 
   } catch (error) {
@@ -162,5 +183,67 @@ module.exports = {
   obtenerSesionesBombero,
   actualizarSesion,
   eliminarSesion,
-  prepararSimulacion
+  prepararSimulacion,
+  subirAudioSesion,
+  getAudioSesion
 };
+
+/**
+ * Subir audio de una sesión y actualizar el registro en la base de datos
+ * Método: PUT /api/v1/sesiones/:id/audio
+ */
+async function subirAudioSesion(req, res) {
+  const ID_Sesion = req.params.id;
+
+  if (!req.file) {
+    return res.status(400).json({ message: 'No se recibió archivo de audio.' });
+  }
+
+  try {
+    // Buscar la sesión
+    const sesion = await SesionEntrenamiento.findByPk(ID_Sesion);
+    if (!sesion) {
+      return res.status(404).json({ message: `Sesión ID ${ID_Sesion} no encontrada.` });
+    }
+
+    // Guardar el buffer del archivo en la BD (MEDIUMBLOB) y guardar el mime type
+    const buffer = req.file.buffer;
+    const mime = req.file.mimetype || 'application/octet-stream';
+
+    sesion.Audio_Sesion = buffer;
+    sesion.Audio_Mime = mime;
+    await sesion.save();
+
+    res.status(200).json({ message: 'Audio subido correctamente y guardado en BD.', sesion });
+  } catch (error) {
+    console.error('Error en subirAudioSesion:', error);
+    res.status(500).json({ message: 'Error al procesar el audio.', error: error.message });
+  }
+}
+
+/**
+ * Servir audio almacenado en BD para una sesión
+ * Método: GET /api/v1/sesiones/:id/audio
+ */
+async function getAudioSesion(req, res) {
+  const ID_Sesion = req.params.id;
+  try {
+    const sesion = await SesionEntrenamiento.findByPk(ID_Sesion);
+    if (!sesion) return res.status(404).json({ message: `Sesión ${ID_Sesion} no encontrada.` });
+
+    const audioBlob = sesion.Audio_Sesion;
+    const mime = sesion.Audio_Mime || 'application/octet-stream';
+
+    if (!audioBlob) return res.status(404).json({ message: 'No hay audio para esta sesión.' });
+
+    // audioBlob puede ser un Buffer (Node) o un objeto Buffer-like
+    const buf = Buffer.isBuffer(audioBlob) ? audioBlob : Buffer.from(audioBlob);
+
+    res.setHeader('Content-Type', mime);
+    res.setHeader('Content-Length', buf.length);
+    return res.status(200).send(buf);
+  } catch (error) {
+    console.error('Error en getAudioSesion:', error);
+    return res.status(500).json({ message: 'Error al obtener audio.', error: error.message });
+  }
+}

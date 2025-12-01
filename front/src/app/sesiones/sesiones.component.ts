@@ -34,6 +34,15 @@ export class SesionesComponent implements OnInit, OnDestroy {
   bomberosDisponibles: Bombero[] = [];
   escenarios: Escenario[] = [];
   escenarioSeleccionadoId: number | null = null;
+  // Opción para grabar audio cuando se inicie la simulación
+  grabarAudio: boolean = false;
+  // Listado de sesiones pasadas
+  sesiones: any[] = [];
+  selectedSesion: any = null;
+  // URL creado para reproducir el blob audio
+  audioUrl: string | null = null;
+  // Archivo audio seleccionado para subir (testing desde la UI)
+  audioFileToUpload: File | null = null;
 
   // Mensajes de estado (Opcional)
   loading = false;
@@ -65,6 +74,7 @@ export class SesionesComponent implements OnInit, OnDestroy {
     // 2. Obtener lista de escenarios y bomberos (HTTP REST)
     this.cargarEscenarios();
     this.cargarBomberos();
+    this.cargarSesiones();
     
     // 3. Suscribirse al nuevo evento WebSocket: 'select-bombero'
     this.listenForUnityReady();
@@ -107,6 +117,110 @@ export class SesionesComponent implements OnInit, OnDestroy {
     });
     this.subscriptions.add(sub);
   }
+
+  cargarSesiones(): void {
+    this.loading = true;
+    this.sesionService.getSesiones().subscribe({
+      next: (data: any[]) => {
+        this.sesiones = data || [];
+        this.loading = false;
+      },
+      error: (err) => {
+        this.loading = false;
+        console.error('Error al cargar sesiones:', err);
+      }
+    });
+  }
+
+  getAudioUrl(relativePath?: string | null): string {
+    if (!relativePath) return '';
+    // Ajusta la base según tu backend
+    const API_BASE = 'http://pacheco.chillan.ubiobio.cl:8020';
+    // Si la ruta ya comienza con '/', no añadir otra
+    return `${API_BASE}/${relativePath.replace(/^\//, '')}`;
+  }
+
+  onAudioFileSelected(event: any): void {
+    const files: FileList = event.target.files;
+    if (files.length > 0) {
+      this.audioFileToUpload = files.item(0);
+    }
+  }
+
+  uploadAudioForSelectedSesion(): void {
+    if (!this.selectedSesion) {
+      this.errorMsg = 'Selecciona una sesión primero.';
+      return;
+    }
+    if (!this.audioFileToUpload) {
+      this.errorMsg = 'Selecciona un archivo de audio para subir.';
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('audio', this.audioFileToUpload, this.audioFileToUpload.name);
+
+    this.loading = true;
+    const sub = this.sesionService.uploadAudio(this.selectedSesion.ID_Sesion || this.selectedSesion.id, formData).subscribe({
+      next: (resp: any) => {
+        this.loading = false;
+        this.successMsg = resp?.message || 'Audio subido con éxito.';
+        // Actualizar la sesión en la UI
+        if (resp?.sesion) {
+          // Reemplazar objeto en array
+          const idx = this.sesiones.findIndex(s => (s.ID_Sesion || s.id) === (resp.sesion.ID_Sesion || resp.sesion.id));
+          if (idx >= 0) this.sesiones[idx] = resp.sesion;
+          this.selectedSesion = resp.sesion;
+            // si backend devolvió sesion actualizada, limpiamos cached audioUrl
+            if (this.audioUrl) {
+              URL.revokeObjectURL(this.audioUrl);
+              this.audioUrl = null;
+            }
+        }
+        this.audioFileToUpload = null;
+      },
+      error: (err) => {
+        this.loading = false;
+        console.error('Error subiendo audio:', err);
+        this.errorMsg = err.error?.message || err.message || 'Error al subir el audio.';
+      }
+    });
+
+    this.subscriptions.add(sub);
+  }
+
+  /** Cargar y reproducir audio de la sesión desde el backend (blob) */
+  loadAndPlayAudio(sesion: any) {
+    const id = sesion.ID_Sesion || sesion.id;
+    if (!id) return;
+
+    this.loading = true;
+    const sub = this.sesionService.getAudio(id).subscribe({
+      next: (blob: Blob) => {
+        this.loading = false;
+        if (this.audioUrl) {
+          URL.revokeObjectURL(this.audioUrl);
+          this.audioUrl = null;
+        }
+        this.audioUrl = URL.createObjectURL(blob);
+        // Assign the audio src by selecting the audio element in DOM if needed
+        setTimeout(() => {
+          const audioEl: HTMLAudioElement | null = document.querySelector('audio#audioPlayer');
+          if (audioEl) {
+            audioEl.src = this.audioUrl as string;
+            audioEl.load();
+            audioEl.play().catch(()=>{});
+          }
+        }, 50);
+      },
+      error: (err) => {
+        this.loading = false;
+        console.error('Error obteniendo audio:', err);
+        this.errorMsg = err.error?.message || 'Error al obtener audio.';
+      }
+    });
+    this.subscriptions.add(sub);
+  }
   
   // --- LÓGICA DE WEBSOCKETS ---
 
@@ -156,24 +270,37 @@ export class SesionesComponent implements OnInit, OnDestroy {
         return;
     }
 
-    // El payload que enviamos a Node.js (por SOCKETS)
-    const payload = {
-      idBombero: bomberoElegido.ID_Bombero,
-      idCapacitador: this.capacitadorId,
-      idEscenario: this.escenarioSeleccionadoId,
-      nombreEscenario: escenarioElegido.NombreEscenario,
-      stationId: this.pendingStationId 
-    };
+    // Enviar la preparación al backend vía HTTP: el backend guardará la sesión y reenviará el evento a Unity
+    const payload = {
+      idBombero: bomberoElegido.ID_Bombero,
+      idCapacitador: this.capacitadorId,
+      idEscenario: this.escenarioSeleccionadoId,
+      nombreEscenario: escenarioElegido.NombreEscenario,
+      idInstanciaUnity: this.pendingStationId,
+      grabar: !!this.grabarAudio
+    } as any; // backend acepta el flag 'grabar'
 
-    // Enviar el evento 'start-vr-session' al backend para que este lo reenvíe a Unity
-    this.socketService.emit('start-vr-session', payload);
+    const sub = this.sesionService.prepararSimulacion(payload).subscribe({
+      next: (resp: any) => {
+        this.loading = false;
+        this.successMsg = resp?.message || `Comando enviado a ${this.pendingStationId}: Iniciar ${escenarioElegido.NombreEscenario} con ${bomberoElegido.NombreCompleto}.`;
+        // Si el backend creó la sesión, la podemos añadir localmente al listado
+        if (resp?.sesion) {
+          this.sesiones.unshift(resp.sesion);
+        }
 
-    this.loading = false;
-    this.successMsg = `Comando enviado a ${this.pendingStationId}: Iniciar ${escenarioElegido.NombreEscenario} con ${bomberoElegido.NombreCompleto}.`;
+        // Limpiar estado de espera para la próxima sesión
+        this.pendingStationId = null;
+        this.bomberoSeleccionadoId = null;
+        this.escenarioSeleccionadoId = this.escenarios.length > 0 ? this.escenarios[0].id_Escenario : null;
+      },
+      error: (err) => {
+        console.error('Error preparando simulación:', err);
+        this.loading = false;
+        this.errorMsg = err.error?.message || err.message || 'Error al preparar la simulación.';
+      }
+    });
 
-    // Limpiar estado de espera para la próxima sesión
-    this.pendingStationId = null;
-    this.bomberoSeleccionadoId = null;
-    this.escenarioSeleccionadoId = this.escenarios.length > 0 ? this.escenarios[0].id_Escenario : null;
+    this.subscriptions.add(sub);
   }
 }

@@ -64,15 +64,25 @@ export class AuthService {
   }
 
   logout() {
-    return this.http.post(`${this.apiUrl}/logout`, {}, { withCredentials: true })
-      .subscribe(() => {
-        // Limpiar estado en memoria.
-        // La cookie se borra en el servidor (clearCookie).
-        this.capacitadorSubject.next(null);
-        this.loggedInSubject.next(false);
-        // Resetear el promise para que el guard sepa que no hay sesión
-        this.sessionCheckPromise = Promise.resolve(false);
-        this.router.navigate(['/login']);
+    // Limpiar estado INMEDIATAMENTE (no esperar respuesta del servidor)
+    this.capacitadorSubject.next(null);
+    this.loggedInSubject.next(false);
+    this.sessionCheckPromise = Promise.resolve(false);
+    
+    // Llamar al servidor para limpiar la cookie
+    this.http.post(`${this.apiUrl}/logout`, {}, { withCredentials: true })
+      .subscribe({
+        next: () => {
+          console.log('Logout exitoso en el servidor');
+        },
+        error: (err) => {
+          console.error('Error al hacer logout en el servidor:', err);
+          // Aunque falle el servidor, ya limpiamos el estado local
+        },
+        complete: () => {
+          // Navegar después de intentar limpiar en el servidor
+          this.router.navigate(['/login']);
+        }
       });
   }
 

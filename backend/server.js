@@ -47,9 +47,10 @@ app.use(cors({
     'http://127.0.0.1',
     'capacitor://localhost'
   ],
-  credentials: true,
+  credentials: true, // ESENCIAL para que las cookies funcionen
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  exposedHeaders: ['Set-Cookie'] // Permitir que el cliente vea Set-Cookie
 }));
 
 // Conectar a la base de datos

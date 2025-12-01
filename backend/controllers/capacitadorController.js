@@ -20,11 +20,14 @@ async function loginCapacitador(req, res) {
     }, JWT_SECRET, { expiresIn: '2h' });
 
     // Enviar cookie HttpOnly
+    // IMPORTANTE: secure debe coincidir con el valor usado en logout
+    // secure: false porque no usamos HTTPS
     res.cookie('token', token, {
       httpOnly: true,
-      secure: false, // true en prod (HTTPS)
+      secure: false, // false porque usamos HTTP (sin SSL)
       sameSite: 'lax',
-      maxAge: JWT_EXPIRES
+      maxAge: JWT_EXPIRES,
+      path: '/' // Asegurar que la cookie esté disponible en toda la aplicación
     });
 
     // Responder con datos seguros del capacitador (sin contraseña)
@@ -131,10 +134,13 @@ function meCapacitador(req, res) {
 
 function logoutCapacitador(req, res) {
   // Borra la cookie en el navegador
+  // IMPORTANTE: Los atributos deben coincidir EXACTAMENTE con los del login
+  // secure: false porque usamos HTTP (sin SSL)
   res.clearCookie('token', {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax'
+    secure: false, // false porque usamos HTTP (sin SSL)
+    sameSite: 'lax',
+    path: '/' // CRUCIAL: debe coincidir con el path del login
   });
   return res.status(200).json({ message: 'Logout exitoso' });
 }

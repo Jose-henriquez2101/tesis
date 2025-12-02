@@ -34,15 +34,10 @@ export class SesionesComponent implements OnInit, OnDestroy {
   bomberosDisponibles: Bombero[] = [];
   escenarios: Escenario[] = [];
   escenarioSeleccionadoId: number | null = null;
-  // Opción para grabar audio cuando se inicie la simulación
-  grabarAudio: boolean = false;
   // Listado de sesiones pasadas
   sesiones: any[] = [];
   selectedSesion: any = null;
-  // URL creado para reproducir el blob audio
-  audioUrl: string | null = null;
-  // Archivo audio seleccionado para subir (testing desde la UI)
-  audioFileToUpload: File | null = null;
+  
 
   // Mensajes de estado (Opcional)
   loading = false;
@@ -140,87 +135,8 @@ export class SesionesComponent implements OnInit, OnDestroy {
     return `${API_BASE}/${relativePath.replace(/^\//, '')}`;
   }
 
-  onAudioFileSelected(event: any): void {
-    const files: FileList = event.target.files;
-    if (files.length > 0) {
-      this.audioFileToUpload = files.item(0);
-    }
-  }
-
-  uploadAudioForSelectedSesion(): void {
-    if (!this.selectedSesion) {
-      this.errorMsg = 'Selecciona una sesión primero.';
-      return;
-    }
-    if (!this.audioFileToUpload) {
-      this.errorMsg = 'Selecciona un archivo de audio para subir.';
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append('audio', this.audioFileToUpload, this.audioFileToUpload.name);
-
-    this.loading = true;
-    const sub = this.sesionService.uploadAudio(this.selectedSesion.ID_Sesion || this.selectedSesion.id, formData).subscribe({
-      next: (resp: any) => {
-        this.loading = false;
-        this.successMsg = resp?.message || 'Audio subido con éxito.';
-        // Actualizar la sesión en la UI
-        if (resp?.sesion) {
-          // Reemplazar objeto en array
-          const idx = this.sesiones.findIndex(s => (s.ID_Sesion || s.id) === (resp.sesion.ID_Sesion || resp.sesion.id));
-          if (idx >= 0) this.sesiones[idx] = resp.sesion;
-          this.selectedSesion = resp.sesion;
-            // si backend devolvió sesion actualizada, limpiamos cached audioUrl
-            if (this.audioUrl) {
-              URL.revokeObjectURL(this.audioUrl);
-              this.audioUrl = null;
-            }
-        }
-        this.audioFileToUpload = null;
-      },
-      error: (err) => {
-        this.loading = false;
-        console.error('Error subiendo audio:', err);
-        this.errorMsg = err.error?.message || err.message || 'Error al subir el audio.';
-      }
-    });
-
-    this.subscriptions.add(sub);
-  }
-
-  /** Cargar y reproducir audio de la sesión desde el backend (blob) */
-  loadAndPlayAudio(sesion: any) {
-    const id = sesion.ID_Sesion || sesion.id;
-    if (!id) return;
-
-    this.loading = true;
-    const sub = this.sesionService.getAudio(id).subscribe({
-      next: (blob: Blob) => {
-        this.loading = false;
-        if (this.audioUrl) {
-          URL.revokeObjectURL(this.audioUrl);
-          this.audioUrl = null;
-        }
-        this.audioUrl = URL.createObjectURL(blob);
-        // Assign the audio src by selecting the audio element in DOM if needed
-        setTimeout(() => {
-          const audioEl: HTMLAudioElement | null = document.querySelector('audio#audioPlayer');
-          if (audioEl) {
-            audioEl.src = this.audioUrl as string;
-            audioEl.load();
-            audioEl.play().catch(()=>{});
-          }
-        }, 50);
-      },
-      error: (err) => {
-        this.loading = false;
-        console.error('Error obteniendo audio:', err);
-        this.errorMsg = err.error?.message || 'Error al obtener audio.';
-      }
-    });
-    this.subscriptions.add(sub);
-  }
+  // Eliminada lógica antigua de subida y reproducción de audio desde el front;
+  // El audio será capturado y subido por Unity vía HTTP PUT.
   
   // --- LÓGICA DE WEBSOCKETS ---
 
@@ -276,9 +192,8 @@ export class SesionesComponent implements OnInit, OnDestroy {
       idCapacitador: this.capacitadorId,
       idEscenario: this.escenarioSeleccionadoId,
       nombreEscenario: escenarioElegido.NombreEscenario,
-      idInstanciaUnity: this.pendingStationId,
-      grabar: !!this.grabarAudio
-    } as any; // backend acepta el flag 'grabar'
+      idInstanciaUnity: this.pendingStationId
+    } as any;
 
     const sub = this.sesionService.prepararSimulacion(payload).subscribe({
       next: (resp: any) => {

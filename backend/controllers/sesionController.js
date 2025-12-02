@@ -66,15 +66,10 @@ async function prepararSimulacion(req, res) {
       });
     }
 
-    // 4. Emitir el evento de iniciar simulación SOLO a ese cliente Unity específico
-    io.to(unitySocketId).emit('iniciar-simulacion', {
-      evento: "iniciar-simulacion",
-      data: {
-        idEscenario: idEscenario,
-        nombreEscenario: nombreEscenario,
-        grabar: !!grabar,
-        sessionId: nuevaSesion ? (nuevaSesion.ID_Sesion || nuevaSesion.id) : null
-      }
+    // 4. Emitir a Unity SOLO los datos necesarios para cargar escenario y vincular sesión
+    io.to(unitySocketId).emit('load-scenario', {
+      idEscenario: idEscenario,
+      idSesion: nuevaSesion ? (nuevaSesion.ID_Sesion || nuevaSesion.id) : null
     });
 
     res.status(200).json({

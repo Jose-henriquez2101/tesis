@@ -73,26 +73,28 @@ io.on('connection', (socket) => {
     console.log(`Evento 'unity-ready' recibido de ${unityId}. Notificando a Angular.`);
   });
 
-  // ANGULAR: Recibe el evento de Unity, el Capacitador selecciona y envía la decisión
-  // NOTA: Este evento lo debe enviar el Panel Angular (el Cliente Capacitador).
-  socket.on('start-vr-session', (data) => {
-    const { stationId, idBombero, idEscenario } = data;
-    console.log(`Petición de Angular: Iniciar Escenario ID ${idEscenario} para Bombero ${idBombero} en Estación ${stationId}`);
+  // ANGULAR: Recibe el evento de Unity, el Capacitador selecciona y envía la decisión
+  // NOTA: Este evento lo debe enviar el Panel Angular (el Cliente Capacitador).
+  socket.on('start-vr-session', (data) => {
+    const { stationId, idBombero, idEscenario, idSesion } = data;
+    console.log(`Petición de Angular: Iniciar Escenario ID ${idEscenario} para Bombero ${idBombero} en Estación ${stationId}, Sesión ID ${idSesion}`);
 
-    const targetSocketId = unityClients.get(stationId);
+    const targetSocketId = unityClients.get(stationId);
 
-    if (targetSocketId) {
-      // ENVIAR SOLAMENTE EL ID DE ESCENARIO
-      io.to(targetSocketId).emit('load-scenario', idEscenario); // <--- CAMBIO CLAVE
-      console.log(`Comando de carga de Escenario ID ${idEscenario} enviado a Unity: ${stationId}`);
-    } else {
-      console.error(`Error: Estación Unity ${stationId} no encontrada para envío dirigido.`);
-      // Opcional: Notificar a Angular que el envío falló
-      socket.emit('session-error', { message: `Estación ${stationId} no está conectada.` });
-    }
-  });
-
-  socket.on('disconnect', () => {
+    if (targetSocketId) {
+      // ENVIAR ID DE ESCENARIO Y ID DE SESIÓN a Unity
+      io.to(targetSocketId).emit('load-scenario', { 
+        idEscenario, 
+        idSesion,
+        idBombero 
+      });
+      console.log(`Comando enviado a Unity ${stationId}: Escenario ${idEscenario}, Sesión ${idSesion}`);
+    } else {
+      console.error(`Error: Estación Unity ${stationId} no encontrada para envío dirigido.`);
+      // Opcional: Notificar a Angular que el envío falló
+      socket.emit('session-error', { message: `Estación ${stationId} no está conectada.` });
+    }
+  });  socket.on('disconnect', () => {
     // Limpiar el cliente Unity si se desconecta
     for (let [unityId, socketId] of unityClients.entries()) {
       if (socketId === socket.id) {

@@ -56,13 +56,5 @@ export class SesionService {
     return this.http.get<any[]>(`${this.apiUrl}/sesiones/bomberos/${idBombero}`);
   }
 
-  /** Subir audio para una sesión (PUT /api/v1/sesiones/:id/audio) */
-  uploadAudio(sessionId: number | string, formData: FormData) {
-    return this.http.put(`${this.apiUrl}/sesiones/${sessionId}/audio`, formData);
-  }
-
-  /** Obtener audio de sesión como Blob (GET /api/v1/sesiones/:id/audio) */
-  getAudio(sessionId: number | string) {
-    return this.http.get(`${this.apiUrl}/sesiones/${sessionId}/audio`, { responseType: 'blob' });
-  }
+  // Eliminados métodos de audio del front; Unity gestionará subida y reproducción.
 }

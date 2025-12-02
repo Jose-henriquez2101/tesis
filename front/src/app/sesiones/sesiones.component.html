@@ -44,10 +44,7 @@
         </select>
       </div>
 
-      <div class="form-check mb-3">
-        <input class="form-check-input" type="checkbox" id="grabarCheck" [(ngModel)]="grabarAudio" name="grabarAudio">
-        <label class="form-check-label" for="grabarCheck">Grabar audio durante la simulación</label>
-      </div>
+      
 
       <button 
         class="btn-modern"
@@ -97,25 +94,7 @@
         <p><strong>Escenario:</strong> {{ selectedSesion.escenario?.NombreEscenario || selectedSesion.nombreEscenario }}</p>
         <p><strong>Bombero:</strong> {{ selectedSesion.bombero?.NombreCompleto || selectedSesion.nombreBombero }}</p>
         <p *ngIf="selectedSesion.Fecha || selectedSesion.fecha || selectedSesion.createdAt"><strong>Fecha:</strong> {{ (selectedSesion.Fecha || selectedSesion.fecha || selectedSesion.createdAt) | date:'dd/MM/yyyy HH:mm' }}</p>
-        
-        <!-- Reproductor de audio si existe en BD (se solicita al backend) -->
-        <div>
-          <h6>Grabación de la sesión</h6>
-          <div class="mb-2">
-            <button class="btn btn-sm btn-outline-primary" (click)="loadAndPlayAudio(selectedSesion)">Cargar y Reproducir</button>
-            <span *ngIf="loading" class="text-muted"> Cargando audio...</span>
-          </div>
-          <audio id="audioPlayer" controls *ngIf="audioUrl" [src]="audioUrl"></audio>
-        </div>
-
-        <!-- Formulario para subir audio (útil para pruebas desde UI o para reemplazar) -->
-        <div class="mt-2">
-          <label class="form-label">Subir/Actualizar audio de la sesión (prueba)</label>
-          <input type="file" accept="audio/*" (change)="onAudioFileSelected($event)" />
-          <div class="mt-2">
-            <button class="btn btn-sm btn-primary" (click)="uploadAudioForSelectedSesion()" [disabled]="loading || !audioFileToUpload">Subir audio</button>
-          </div>
-        </div>
+        <!-- Se removió UI de audio: Unity se encargará de capturar y subir audio -->
       </div>
     </div>
 </div>

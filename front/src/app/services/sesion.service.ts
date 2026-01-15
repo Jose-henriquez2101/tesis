@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 // --- Interfaces Necesarias ---
@@ -50,11 +50,37 @@ export class SesionService {
   }
 
   /**
+   * 3b. Obtener sesiones paginadas (incluye meta en headers)
+   * Headers: X-Total-Count, X-Page, X-Limit, X-Total-Pages
+   */
+  getSesionesPaginadas(page = 1, limit = 5): Observable<HttpResponse<any[]>> {
+    const params = new HttpParams()
+      .set('page', String(page))
+      .set('limit', String(limit));
+    return this.http.get<any[]>(`${this.apiUrl}/sesiones`, {
+      params,
+      observe: 'response'
+    });
+  }
+
+  /**
    * 4. Obtener sesiones de un bombero específico (GET /api/v1/sesiones/bomberos/:id)
    */
   getSesionesPorBombero(idBombero: number): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/sesiones/bomberos/${idBombero}`);
   }
 
-  // Eliminados métodos de audio del front; Unity gestionará subida y reproducción.
+  /**
+   * 4b. Obtener sesiones por bombero con paginación
+   */
+  getSesionesPorBomberoPaginadas(idBombero: number, page = 1, limit = 5): Observable<HttpResponse<any[]>> {
+    const params = new HttpParams()
+      .set('page', String(page))
+      .set('limit', String(limit));
+    return this.http.get<any[]>(`${this.apiUrl}/sesiones/bomberos/${idBombero}`, {
+      params,
+      observe: 'response'
+    });
+  }
+
 }

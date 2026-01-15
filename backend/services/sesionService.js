@@ -1,15 +1,12 @@
-const { SesionEntrenamiento, Bombero, Capacitador, Escenario } = require('../models');
+const { SesionEntrenamiento, Bombero, Capacitador, Escenario, sequelize } = require('../models');
 
 // Función CREATE (C) - Ya existente
 async function registrarNuevaSesion(datosSesion) {
   try {
-    // ... (lógica de validación)
     const nuevaSesion = await SesionEntrenamiento.create(datosSesion);
     return nuevaSesion;
   } catch (error) {
-    // Log full error and rethrow it so controller can surface useful diagnostics
     console.error('Error en servicio al registrar sesión:', error && (error.message || error.stack || error));
-    // Rethrow a descriptive error that preserves original message for debugging
     throw new Error('No se pudo registrar la sesión de entrenamiento. ' + (error.message || error));
   }
 }
@@ -54,8 +51,33 @@ async function obtenerSesionesPorBombero(ID_Bombero) {
     throw new Error('No se pudieron obtener las sesiones del bombero.');
   }
 }
+// Paginación para sesiones por bombero
+async function obtenerSesionesPorBomberoPaginado(ID_Bombero, { page = 1, limit = 5, includeAudio = false } = {}) {
+  try {
+    const l = Math.max(1, Number(limit));
+    const p = Math.max(1, Number(page));
+    const offset = (p - 1) * l;
 
-// Función READ (R) - Obtener todas las sesiones (Nuevo)
+    const { rows, count } = await SesionEntrenamiento.findAndCountAll({
+      where: { ID_Bombero_FK: ID_Bombero },
+      order: [['ID_Sesion', 'DESC']],
+      limit: l,
+      offset,
+      attributes: includeAudio ? undefined : { include: [[sequelize.literal('Audio_Sesion IS NOT NULL'), 'hasAudio']], exclude: ['Audio_Sesion', 'Audio_Mime'] },
+      include: [
+        { model: Bombero, as: 'bombero', attributes: ['ID_Bombero', 'NombreCompleto', 'Rut'] },
+        { model: Capacitador, as: 'capacitador', attributes: ['ID_Capacitador', 'Nombre'] },
+        { model: Escenario, as: 'escenario', attributes: ['id_Escenario', 'NombreEscenario'] }
+      ]
+    });
+    return { rows, count };
+  } catch (error) {
+    console.error('Error en servicio al obtener sesiones paginadas por bombero:', error.message);
+    throw new Error('No se pudieron obtener las sesiones del bombero.');
+  }
+}
+
+// Función READ (R) - Obtener todas las sesiones
 async function obtenerTodasSesiones() {
   try {
     const sesiones = await SesionEntrenamiento.findAll({
@@ -68,6 +90,30 @@ async function obtenerTodasSesiones() {
     return sesiones;
   } catch (error) {
     console.error('Error en servicio al obtener todas las sesiones:', error.message);
+    throw new Error('No se pudieron obtener las sesiones.');
+  }
+}
+// Paginación para todas las sesiones
+async function obtenerTodasSesionesPaginado({ page = 1, limit = 5, includeAudio = false } = {}) {
+  try {
+    const l = Math.max(1, Number(limit));
+    const p = Math.max(1, Number(page));
+    const offset = (p - 1) * l;
+
+    const { rows, count } = await SesionEntrenamiento.findAndCountAll({
+      order: [['Fecha', 'DESC'], ['ID_Sesion', 'DESC']],
+      limit: l,
+      offset,
+      attributes: includeAudio ? undefined : { include: [[sequelize.literal('Audio_Sesion IS NOT NULL'), 'hasAudio']], exclude: ['Audio_Sesion', 'Audio_Mime'] },
+      include: [
+        { model: Bombero, as: 'bombero', attributes: ['ID_Bombero', 'NombreCompleto', 'Rut'] },
+        { model: Capacitador, as: 'capacitador', attributes: ['ID_Capacitador', 'Nombre'] },
+        { model: Escenario, as: 'escenario', attributes: ['id_Escenario', 'NombreEscenario'] }
+      ]
+    });
+    return { rows, count };
+  } catch (error) {
+    console.error('Error en servicio al obtener sesiones paginadas:', error.message);
     throw new Error('No se pudieron obtener las sesiones.');
   }
 }
@@ -118,9 +164,11 @@ async function eliminarSesion(idSesion) {
 
 module.exports = {
   registrarNuevaSesion,
-  obtenerSesionPorId, // Nuevo método READ
+  obtenerSesionPorId,
   obtenerTodasSesiones,
+  obtenerTodasSesionesPaginado,
   obtenerSesionesPorBombero,
-  actualizarSesion,   // Nuevo método UPDATE
-  eliminarSesion      // Nuevo método DELETE
+  obtenerSesionesPorBomberoPaginado,
+  actualizarSesion,
+  eliminarSesion
 };

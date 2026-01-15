@@ -50,7 +50,7 @@ app.use(cors({
   credentials: true, // ESENCIAL para que las cookies funcionen
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  exposedHeaders: ['Set-Cookie'] // Permitir que el cliente vea Set-Cookie
+  exposedHeaders: ['Set-Cookie', 'X-Total-Count', 'X-Total-Pages', 'X-Page', 'X-Limit'] // Exponer meta de paginación al front
 }));
 
 // Conectar a la base de datos

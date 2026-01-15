@@ -37,6 +37,11 @@ export class SesionesComponent implements OnInit, OnDestroy {
   // Listado de sesiones pasadas
   sesiones: any[] = [];
   selectedSesion: any = null;
+  // Paginación
+  page = 1;
+  limit = 5;
+  total = 0;
+  totalPages = 1;
   
 
   // Mensajes de estado (Opcional)
@@ -115,9 +120,12 @@ export class SesionesComponent implements OnInit, OnDestroy {
 
   cargarSesiones(): void {
     this.loading = true;
-    this.sesionService.getSesiones().subscribe({
-      next: (data: any[]) => {
-        this.sesiones = data || [];
+    this.sesionService.getSesionesPaginadas(this.page, this.limit).subscribe({
+      next: (resp) => {
+        this.sesiones = resp.body || [];
+        const headers = resp.headers;
+        this.total = Number(headers.get('X-Total-Count')) || 0;
+        this.totalPages = Number(headers.get('X-Total-Pages')) || 1;
         this.loading = false;
       },
       error: (err) => {
@@ -125,6 +133,20 @@ export class SesionesComponent implements OnInit, OnDestroy {
         console.error('Error al cargar sesiones:', err);
       }
     });
+  }
+
+  paginaAnterior(): void {
+    if (this.page > 1) {
+      this.page -= 1;
+      this.cargarSesiones();
+    }
+  }
+
+  paginaSiguiente(): void {
+    if (this.page < this.totalPages) {
+      this.page += 1;
+      this.cargarSesiones();
+    }
   }
 
   getAudioUrl(relativePath?: string | null): string {
@@ -199,10 +221,8 @@ export class SesionesComponent implements OnInit, OnDestroy {
       next: (resp: any) => {
         this.loading = false;
         this.successMsg = resp?.message || `Comando enviado a ${this.pendingStationId}: Iniciar ${escenarioElegido.NombreEscenario} con ${bomberoElegido.NombreCompleto}.`;
-        // Si el backend creó la sesión, la podemos añadir localmente al listado
-        if (resp?.sesion) {
-          this.sesiones.unshift(resp.sesion);
-        }
+        // Tras crear una nueva sesión, refrescar la página actual
+        this.cargarSesiones();
 
         // Limpiar estado de espera para la próxima sesión
         this.pendingStationId = null;

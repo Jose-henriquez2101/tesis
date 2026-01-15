@@ -34,7 +34,7 @@ export class LoginCapacitadorComponent {
 
     this.authService.login(this.loginForm.value).subscribe({
       next: () => {
-        // El AuthService ya hace navigate(['/dashboard']);
+        // Login exitoso, la lógica de redirección se maneja en el servicio AuthService
       },
       error: (err) => {
         this.errorMessage = err.error?.message || "Credenciales inválidas.";

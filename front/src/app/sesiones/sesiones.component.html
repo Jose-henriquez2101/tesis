@@ -81,7 +81,7 @@
                   *ngFor="let s of sesiones" (click)="selectedSesion = (selectedSesion === s ? null : s)">
             <div class="d-flex w-100 justify-content-between">
               <h5 class="mb-1">Sesión {{ s.ID_Sesion || s.id || '—' }}</h5>
-              <small class="text-muted">{{ (s.Fecha || s.fecha || s.createdAt) ? ((s.Fecha || s.fecha || s.createdAt) | date:'dd/MM/yyyy HH:mm') : '' }}</small>
+              <small class="text-muted">{{ (s.Fecha || s.fecha || s.createdAt) ? ((s.Fecha || s.fecha || s.createdAt) | date:'dd/MM/yyyy') : '' }}</small>
             </div>
             <p class="mb-1">Escenario: {{ s.escenario?.NombreEscenario || s.nombreEscenario || 'N/D' }}</p>
             <small>Participante: {{ s.bombero?.NombreCompleto || s.nombreBombero || 'N/D' }}</small>
@@ -89,12 +89,37 @@
         </div>
       </div>
 
-      <div *ngIf="selectedSesion" class="mt-3">
-        <h5>Detalle Sesión</h5>
+      <!-- Controles de paginación (siempre visible si hay sesiones) -->
+      <div class="d-flex justify-content-between align-items-center mt-3" *ngIf="(sesiones?.length || 0) > 0">
+        <button class="btn btn-outline-secondary" (click)="paginaAnterior()" [disabled]="page <= 1">◀ Anterior</button>
+        <span class="text-center">
+          <strong>Página {{ page }} de {{ totalPages }}</strong>
+          <br>
+          <small class="text-muted">({{ total }} sesión{{ total !== 1 ? 'es' : '' }} en total)</small>
+        </span>
+        <button class="btn btn-outline-secondary" (click)="paginaSiguiente()" [disabled]="page >= totalPages">Siguiente ▶</button>
+      </div>
+
+      <div *ngIf="selectedSesion" class="mt-3 p-3 border rounded bg-light">
+        <h5 class="mb-3">Detalle Sesión #{{ selectedSesion.ID_Sesion || selectedSesion.id }}</h5>
         <p><strong>Escenario:</strong> {{ selectedSesion.escenario?.NombreEscenario || selectedSesion.nombreEscenario }}</p>
         <p><strong>Bombero:</strong> {{ selectedSesion.bombero?.NombreCompleto || selectedSesion.nombreBombero }}</p>
-        <p *ngIf="selectedSesion.Fecha || selectedSesion.fecha || selectedSesion.createdAt"><strong>Fecha:</strong> {{ (selectedSesion.Fecha || selectedSesion.fecha || selectedSesion.createdAt) | date:'dd/MM/yyyy HH:mm' }}</p>
-        <!-- Se removió UI de audio: Unity se encargará de capturar y subir audio -->
+        <p *ngIf="selectedSesion.Fecha || selectedSesion.fecha || selectedSesion.createdAt"><strong>Fecha:</strong> {{ (selectedSesion.Fecha || selectedSesion.fecha || selectedSesion.createdAt) | date:'dd/MM/yyyy' }}</p>
+        
+        
+        <!-- Audio -->
+        <div class="mt-3">
+          <p class="mb-2"><strong>🎧 Audio de la Sesión:</strong></p>
+          <div *ngIf="selectedSesion.audioUrl || selectedSesion.hasAudio; else noAudio">
+            <audio *ngIf="selectedSesion.audioUrl" [src]="selectedSesion.audioUrl" controls class="w-100" style="max-width: 500px;"></audio>
+            <p *ngIf="!selectedSesion.audioUrl && selectedSesion.hasAudio" class="text-warning small">
+              ⚠️ Audio disponible pero URL no generada. ID Sesión: {{ selectedSesion.ID_Sesion }}
+            </p>
+          </div>
+          <ng-template #noAudio>
+            <p class="text-muted small">No hay audio disponible para esta sesión.</p>
+          </ng-template>
+        </div>
       </div>
     </div>
 </div>

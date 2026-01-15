@@ -46,9 +46,9 @@ async function prepararSimulacion(req, res) {
     let nuevaSesion = null;
     try {
       nuevaSesion = await sesionService.registrarNuevaSesion(datosSesion);
-      console.log('✅ Sesión registrada en BD:', nuevaSesion.ID_Sesion || nuevaSesion.id || nuevaSesion);
+      console.log('Sesión registrada en BD:', nuevaSesion.ID_Sesion || nuevaSesion.id || nuevaSesion);
     } catch (dbErr) {
-      console.warn('⚠️ No se pudo registrar la sesión en BD, pero seguiremos con la preparación de la simulación:', dbErr.message || dbErr);
+      console.warn('No se pudo registrar la sesión en BD, pero seguiremos con la preparación de la simulación:', dbErr.message || dbErr);
       // No bloqueamos el envío a Unity por errores de BD
     }
 
@@ -103,12 +103,32 @@ async function obtenerSesion(req, res) {
   }
 }
 
-// [R] READ: Obtener todas las sesiones (GET /api/sesiones/)
+// [R] READ: Obtener sesiones paginadas (GET /api/sesiones?pagina=1&limit=5)
 async function obtenerTodasSesiones(req, res) {
   try {
-    // **NOTA:** Necesitarías implementar obtenerTodasSesiones en el sesionService.js
-    const sesiones = await sesionService.obtenerTodasSesiones(); 
-    res.status(200).json(sesiones);
+    const rawPage = req.query.page || req.query.pagina;
+    const rawLimit = req.query.limit || req.query.limite;
+    const page = Number.isInteger(Number(rawPage)) && Number(rawPage) > 0 ? Number(rawPage) : 1;
+    const limit = Number.isInteger(Number(rawLimit)) && Number(rawLimit) > 0 ? Number(rawLimit) : 5;
+
+    const { rows, count } = await sesionService.obtenerTodasSesionesPaginado({ page, limit, includeAudio: false });
+
+    const items = rows.map(r => {
+      const plain = r.get ? r.get({ plain: true }) : r;
+      const hasAudio = plain.hasAudio !== undefined ? Boolean(Number(plain.hasAudio)) : !!plain.Audio_Sesion;
+      const audioUrl = hasAudio ? `${req.protocol}://${req.get('host')}/api/v1/sesiones/${plain.ID_Sesion}/audio` : null;
+      delete plain.Audio_Sesion;
+      delete plain.Audio_Mime;
+      return { ...plain, hasAudio, audioUrl };
+    });
+
+    const totalPages = Math.ceil(count / limit) || 1;
+    res.setHeader('X-Total-Count', String(count));
+    res.setHeader('X-Page', String(page));
+    res.setHeader('X-Limit', String(limit));
+    res.setHeader('X-Total-Pages', String(totalPages));
+
+    res.status(200).json(items);
   } catch (error) {
     console.error('Error en controlador al obtener todas las sesiones:', error.message);
     res.status(500).json({ message: 'Error al obtener las sesiones.', error: error.message });
@@ -121,9 +141,29 @@ async function obtenerSesionesBombero(req, res) {
   const ID_Bombero = req.params.id;
   
   try {
-    const sesiones = await sesionService.obtenerSesionesPorBombero(ID_Bombero);
-    
-    res.status(200).json(sesiones);
+    const rawPage = req.query.page || req.query.pagina;
+    const rawLimit = req.query.limit || req.query.limite;
+    const page = Number.isInteger(Number(rawPage)) && Number(rawPage) > 0 ? Number(rawPage) : 1;
+    const limit = Number.isInteger(Number(rawLimit)) && Number(rawLimit) > 0 ? Number(rawLimit) : 5;
+
+    const { rows, count } = await sesionService.obtenerSesionesPorBomberoPaginado(ID_Bombero, { page, limit, includeAudio: false });
+
+    const items = rows.map(r => {
+      const plain = r.get ? r.get({ plain: true }) : r;
+      const hasAudio = plain.hasAudio !== undefined ? Boolean(Number(plain.hasAudio)) : !!plain.Audio_Sesion;
+      const audioUrl = hasAudio ? `${req.protocol}://${req.get('host')}/api/v1/sesiones/${plain.ID_Sesion}/audio` : null;
+      delete plain.Audio_Sesion;
+      delete plain.Audio_Mime;
+      return { ...plain, hasAudio, audioUrl };
+    });
+
+    const totalPages = Math.ceil(count / limit) || 1;
+    res.setHeader('X-Total-Count', String(count));
+    res.setHeader('X-Page', String(page));
+    res.setHeader('X-Limit', String(limit));
+    res.setHeader('X-Total-Pages', String(totalPages));
+
+    res.status(200).json(items);
   } catch (error) {
     res.status(500).json({ 
       message: 'Error al obtener las sesiones del bombero.', 
